@@ -1,0 +1,17 @@
+{
+  "homepage": "https://github.com/wheelos/mimas",
+  "maintainers": [
+      {
+          "email": "daohu527@google.com",
+          "github": "daohu527",
+          "name": "daohu527"
+      }
+  ],
+  "repository": [
+      "github:wheelos/mimas"
+  ],
+  "versions": [
+      "0.1.0"
+  ],
+  "yanked_versions": {}
+}
