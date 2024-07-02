@@ -13,7 +13,7 @@ tasks:
     platform: ${{ platform }}
     bazel: ${{ bazel }}
     build_targets:
-    - '@common_msgs//:basic_msgs'
-    - '@common_msgs//:chassis_msgs'
-    - '@common_msgs//:config_msgs'
-    - '@common_msgs//:sensor_msgs'
+    - '@wheelos_common_msgs//:basic_msgs'
+    - '@wheelos_common_msgs//:chassis_msgs'
+    - '@wheelos_common_msgs//:config_msgs'
+    - '@wheelos_common_msgs//:sensor_msgs'
