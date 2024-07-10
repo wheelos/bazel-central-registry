@@ -1,9 +1,9 @@
-diff --git BUILD.bazel BUILD.bazel
+diff --git a/modules/foonathan_memory/0.7.3/BUILD.bazel b/modules/foonathan_memory/0.7.3/BUILD.bazel
 new file mode 100644
-index 0000000..cf703cd
+index 00000000..0526a673
 --- /dev/null
-+++ BUILD.bazel
-@@ -0,0 +1,29 @@
++++ b/modules/foonathan_memory/0.7.3/BUILD.bazel
+@@ -0,0 +1,31 @@
 +""" Builds foonathan_memory.
 +"""
 +
@@ -32,5 +32,6 @@ index 0000000..cf703cd
 +    lib_source = ":all_srcs",
 +    lib_name = "libfoonathan_memory-0.7.3",
 +    out_include_dir = "include/foonathan_memory",
-+    visibility = ["//visibility:public"],
++    visibility = ["//visibility:public"]
 +)
++
