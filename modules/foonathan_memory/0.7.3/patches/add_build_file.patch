@@ -31,5 +31,6 @@ index 0000000..cf703cd
 +    cache_entries = cache_entries,
 +    lib_source = ":all_srcs",
 +    lib_name = "libfoonathan_memory-0.7.3",
++    out_include_dir = "include/foonathan_memory",
 +    visibility = ["//visibility:public"],
 +)
