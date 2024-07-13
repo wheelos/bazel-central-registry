@@ -3,7 +3,6 @@
     "maintainers": [
         {
             "email": "daohu527@gmail.com",
-            "github": "daohu527",
             "name": "daohu527"
         }
     ],
@@ -11,7 +10,7 @@
         "github:eProsima/Fast-DDS"
     ],
     "versions": [
-        "2.14.2"
+        "2.14.4"
     ],
     "yanked_versions": {}
 }

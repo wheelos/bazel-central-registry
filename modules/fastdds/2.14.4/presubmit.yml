@@ -3,8 +3,6 @@ matrix:
     - 6.x
     - 7.x
   platform:
-  - debian10
-  - ubuntu2004
   - ubuntu2204
   - macos
   - macos_arm64

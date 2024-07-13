@@ -1,0 +1,10 @@
+{
+    "url": "https://github.com/daohu527/Fast-DDS/archive/refs/tags/v2.14.4.tar.gz",
+    "integrity": "sha256-9aqNJwl/6lEJxBMBgq2iKjk8lbrLF4J0N0EaTJ/NygA=",
+    "strip_prefix": "Fast-DDS-2.14.4",
+    "patches": {
+        "add_build_file.patch": "sha256-VTP31W87vMhxRQuDKaoqZM35hbRul/iP/vX6knTShpQ=",
+        "module_dot_bazel.patch": "sha256-sEuoRwtlvopv8VuJEYIj/RP6y+Ise5Qd/i7IEBnsYIY="
+    },
+    "patch_strip": 0
+}
