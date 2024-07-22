@@ -1,9 +1,9 @@
 diff --git BUILD.bazel BUILD.bazel
 new file mode 100644
-index 000000000..6a05ccbba
+index 000000000..e663b43ee
 --- /dev/null
 +++ BUILD.bazel
-@@ -0,0 +1,311 @@
+@@ -0,0 +1,313 @@
 +load("@rules_cc//cc:defs.bzl", "cc_library")
 +
 +package(default_visibility = ["//visibility:public"])
@@ -59,11 +59,10 @@ index 000000000..6a05ccbba
 +        "thirdparty/boost/include/**/*.h",
 +        "thirdparty/boost/include/**/*.hpp",
 +        "thirdparty/boost/include/**/*.ipp",
++        "thirdparty/taocpp-pegtl/**/*.hpp",
 +    ]) + [
 +        "thirdparty/filewatch/FileWatch.hpp",
 +        "thirdparty/nlohmann-json/nlohmann/json.hpp",
-+        "thirdparty/taocpp-pegtl/pegtl/contrib/parse_tree.hpp",
-+        "thirdparty/taocpp-pegtl/pegtl.hpp",
 +        ":configure_file",
 +    ],
 +    srcs = [
@@ -293,8 +292,11 @@ index 000000000..6a05ccbba
 +        "src/cpp/statistics/fastdds/domain/DomainParticipant.cpp",
 +        "src/cpp/statistics/fastdds/publisher/qos/DataWriterQos.cpp",
 +        "src/cpp/statistics/fastdds/subscriber/qos/DataReaderQos.cpp",
++    ] + [
++        "src/cpp/rtps/transport/shared_mem/test_SharedMemTransport.cpp",
++        "src/cpp/rtps/transport/shared_mem/SharedMemTransport.cpp"
 +    ] + glob([
-+        "fastdds/topic/DDSSQLFilter/*.cpp",
++        "src/cpp/fastdds/topic/DDSSQLFilter/*.cpp",
 +    ]),
 +    includes = [
 +        "include",
