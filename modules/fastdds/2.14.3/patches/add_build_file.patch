@@ -1,9 +1,9 @@
 diff --git BUILD.bazel BUILD.bazel
 new file mode 100644
-index 000000000..011cde08b
+index 000000000..6a05ccbba
 --- /dev/null
 +++ BUILD.bazel
-@@ -0,0 +1,309 @@
+@@ -0,0 +1,311 @@
 +load("@rules_cc//cc:defs.bzl", "cc_library")
 +
 +package(default_visibility = ["//visibility:public"])
@@ -293,7 +293,9 @@ index 000000000..011cde08b
 +        "src/cpp/statistics/fastdds/domain/DomainParticipant.cpp",
 +        "src/cpp/statistics/fastdds/publisher/qos/DataWriterQos.cpp",
 +        "src/cpp/statistics/fastdds/subscriber/qos/DataReaderQos.cpp",
-+    ],
++    ] + glob([
++        "fastdds/topic/DDSSQLFilter/*.cpp",
++    ]),
 +    includes = [
 +        "include",
 +        "src/cpp",
