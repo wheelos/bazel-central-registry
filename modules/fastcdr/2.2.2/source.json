@@ -3,7 +3,8 @@
     "patch_strip": 0,
     "patches": {
         "add_build_file.patch": "sha256-Zax6B4lZ5V1l0f42N82kqK3aMygHGI9yl7PW63JaCrs=",
-        "module_dot_bazel.patch": "sha256-Pv6D2U03Mf2Eh4skbEflA/k/g4Cnf5eQqKmScjc2cRk="
+        "module_dot_bazel.patch": "sha256-Pv6D2U03Mf2Eh4skbEflA/k/g4Cnf5eQqKmScjc2cRk=",
+        "string_serialize.patch": "sha256-zGycEKXvdXRJ8bIL2vf8FTNtsJre1RiqLGQAX9U1vL0="
     },
     "strip_prefix": "Fast-CDR-2.2.2",
     "url": "https://github.com/eProsima/Fast-CDR/archive/refs/tags/v2.2.2.tar.gz"
