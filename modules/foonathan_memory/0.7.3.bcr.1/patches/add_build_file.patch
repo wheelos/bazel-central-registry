@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000..45721ac
 --- /dev/null
 +++ BUILD.bazel
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,34 @@
 +""" Builds foonathan_memory.
 +"""
 +
@@ -16,6 +16,7 @@ index 0000000..45721ac
 +
 +cache_entries = {
 +    "CMAKE_POSITION_INDEPENDENT_CODE": "ON",  # Must be set!
++    "CMAKE_INSTALL_LIBDIR": "lib",  # libs may be installed in lib64 on some systems.
 +    "BUILD_SHARED_LIBS": "OFF",
 +    # foonathan_memory specific options.
 +    "FOONATHAN_MEMORY_BUILD_EXAMPLES": "OFF",
@@ -29,6 +30,9 @@ index 0000000..45721ac
 +        "-j4",
 +    ],
 +    cache_entries = cache_entries,
++    copts = [
++        "-lstdc++",  # ensure libstdc++ is linked, compiler may not do it by default.
++    ],
 +    lib_source = ":all_srcs",
 +    lib_name = "libfoonathan_memory-0.7.3",
 +    out_include_dir = "include/foonathan_memory",
