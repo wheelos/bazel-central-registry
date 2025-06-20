@@ -4,12 +4,14 @@
         {
             "email": "tekieli.lukasz@gmail.com",
             "github": "ltekieli",
-            "name": "Lukasz Tekieli"
+            "name": "Lukasz Tekieli",
+            "github_user_id": 800113
         },
         {
             "email": "wander4096@gmail.com",
             "github": "tisonkun",
-            "name": "Zili Chen"
+            "name": "Zili Chen",
+            "github_user_id": 18818196
         }
     ],
     "repository": [
@@ -18,7 +20,9 @@
     "versions": [
         "1.21.0",
         "1.24.0",
-        "1.28.2"
+        "1.28.2",
+        "1.31.0",
+        "1.32.0"
     ],
     "yanked_versions": {}
 }

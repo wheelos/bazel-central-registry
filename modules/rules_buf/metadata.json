@@ -2,9 +2,9 @@
     "homepage": "https://github.com/bufbuild/rules_buf",
     "maintainers": [
         {
-            "email": "alex@aspect.dev",
-            "github": "alexeagle",
-            "name": "Alex Eagle"
+            "github": "srikrsna-buf",
+            "name": "Sri Krishna",
+            "github_user_id": 93153132
         }
     ],
     "repository": [
@@ -13,7 +13,8 @@
     "versions": [
         "0.1.1",
         "0.2.0",
-        "0.3.0"
+        "0.3.0",
+        "0.4.0"
     ],
     "yanked_versions": {}
 }

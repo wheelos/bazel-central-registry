@@ -26,14 +26,19 @@ import hashlib
 import json
 import netrc
 import pathlib
+import posixpath
 import re
 import shutil
 import urllib.parse
 import urllib.request
 import yaml
+from urllib.error import HTTPError
 
 GREEN = "\x1b[32m"
 RESET = "\x1b[0m"
+
+PRESUBMIT_YML = "presubmit.yml"
+MODULE_DOT_BAZEL = "MODULE.bazel"
 
 
 def log(msg):
@@ -95,14 +100,24 @@ def read(path):
 
 
 def integrity(data, algorithm="sha256"):
-    assert algorithm in {"sha224", "sha256", "sha384", "sha512"}, "Unsupported SRI algorithm"
+    assert algorithm in {
+        "sha224",
+        "sha256",
+        "sha384",
+        "sha512",
+    }, "Unsupported SRI algorithm"
     hash = getattr(hashlib, algorithm)(data)
     encoded = base64.b64encode(hash.digest()).decode()
     return f"{algorithm}-{encoded}"
 
 
+def integrity_for_comparison(data, expected_integrity):
+    algorithm, _ = expected_integrity.split("-", 1)
+    return integrity(data, algorithm)
+
+
 def json_dump(file, data, sort_keys=True):
-    with open(file, "w") as f:
+    with open(file, "w", newline="\n") as f:
         json.dump(data, f, indent=4, sort_keys=sort_keys)
         f.write("\n")
 
@@ -286,13 +301,20 @@ module(
         return self.get_version_dir(module_name, version) / "source.json"
 
     def get_presubmit_yml_path(self, module_name, version):
-        return self.get_version_dir(module_name, version) / "presubmit.yml"
+        return self.get_version_dir(module_name, version) / PRESUBMIT_YML
 
     def get_patch_file_path(self, module_name, version, patch_name):
         return self.get_version_dir(module_name, version) / "patches" / patch_name
 
     def get_module_dot_bazel_path(self, module_name, version):
         return self.get_version_dir(module_name, version) / "MODULE.bazel"
+
+    def get_attestations(self, module_name, version):
+        path = self.get_version_dir(module_name, version) / "attestations.json"
+        if not path.exists():
+            return None
+
+        return json.loads(path.read_text())
 
     def contains(self, module_name, version=None):
         """
@@ -405,12 +427,12 @@ module(
         json_dump(p.joinpath("source.json"), source, sort_keys=False)
 
         # Create presubmit.yml file
-        presubmit_yml = p.joinpath("presubmit.yml")
+        presubmit_yml = p.joinpath(PRESUBMIT_YML)
         if module.presubmit_yml:
             shutil.copy(module.presubmit_yml, presubmit_yml)
         else:
-            PLATFORMS = ["debian10", "ubuntu2004", "macos", "macos_arm64", "windows"]
-            BAZEL_VERSIONS = ["7.x", "6.x"]
+            PLATFORMS = ["debian11", "ubuntu2204", "macos", "macos_arm64", "windows"]
+            BAZEL_VERSIONS = ["8.x", "7.x", "6.x"]
             presubmit = {
                 "matrix": {
                     "platform": PLATFORMS.copy(),
@@ -486,8 +508,16 @@ module(
             source.pop("patches", None)
 
         overlay_dir = self.get_overlay_dir(module_name, version)
-        overlay_files = {file for file in source.get("overlay", {}).keys() if (overlay_dir / file).is_file()}
-        overlay_integrities = {file: integrity(read(overlay_dir / file)) for file in overlay_files}
+        overlay_files = []
+        if overlay_dir.exists():
+            overlay_files = sorted(
+                [
+                    p.relative_to(overlay_dir)
+                    for p in overlay_dir.rglob("*")
+                    if p.is_file() and p.name != "MODULE.bazel.lock"
+                ]
+            )
+        overlay_integrities = {str(file): integrity(read(overlay_dir / file)) for file in overlay_files}
         if overlay_files:
             source["overlay"] = overlay_integrities
         else:
@@ -504,3 +534,57 @@ module(
         if version in metadata["versions"]:
             metadata["versions"].remove(version)
         json_dump(metadata_path, metadata)
+
+
+def _download_if_exists(url):
+    try:
+        return download(url)
+    except urllib.error.HTTPError as ex:
+        if ex.code == 404:
+            return None
+
+        raise RegistryException(f"Failed to read {url}: {ex.reason}")
+
+
+class UpstreamRegistry:
+    def __init__(self, modules_dir_url):
+        self._root_url = modules_dir_url
+
+    def get_latest_module_version(self, module_name):
+        metadata_url = posixpath.join(self._root_url, module_name, "metadata.json")
+        content = _download_if_exists(metadata_url)
+        if not content:
+            return None
+
+        metadata = json.loads(content)
+        latest_version = metadata["versions"][-1]  # Presubmit ensures asc. order
+        module_root_url = posixpath.join(self._root_url, module_name, latest_version)
+        return ModuleSnapshot(latest_version, module_root_url)
+
+
+class ModuleSnapshot:
+    def __init__(self, version, root_url):
+        self.version = version
+        self._root_url = root_url
+
+    def _download_if_exists(self, filename):
+        return _download_if_exists(posixpath.join(self._root_url, filename))
+
+    def presubmit_yml_lines(self):
+        raw = self._download_if_exists(PRESUBMIT_YML)
+        if not raw:
+            return None
+
+        return raw.decode("utf-8").splitlines(keepends=True)
+
+    def attestations(self):
+        raw = self._download_if_exists("attestations.json")
+        if raw:
+            return json.loads(raw)
+
+    def module_dot_bazel(self):
+        raw = self._download_if_exists(MODULE_DOT_BAZEL)
+        if not raw:
+            return None
+
+        return raw.decode("utf-8")

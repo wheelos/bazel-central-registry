@@ -2,15 +2,17 @@
     "homepage": "https://github.com/civetweb/civetweb",
     "maintainers": [
         {
-            "email": "bcr-maintainers@bazel.build",
-            "name": "No Maintainer Specified"
+            "email": "daohu527@gmail.com",
+            "name": "daohu527"
         }
     ],
     "repository": [
         "github:civetweb/civetweb"
     ],
     "versions": [
-        "1.16"
+        "1.16",
+        "1.16.bcr.1",
+        "1.16.bcr.2"
     ],
     "yanked_versions": {}
 }

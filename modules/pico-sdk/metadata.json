@@ -3,15 +3,18 @@
     "maintainers": [
         {
             "github": "armandomontanez",
-            "name": "Armando Montanez"
+            "name": "Armando Montanez",
+            "github_user_id": 21975658
         },
         {
             "github": "kilograham",
-            "name": "Graham Sanderson"
+            "name": "Graham Sanderson",
+            "github_user_id": 575810
         },
         {
             "github": "tpudlik",
-            "name": "Ted Pudlik"
+            "name": "Ted Pudlik",
+            "github_user_id": 4148295
         },
         {
             "email": "pigweed-team@googlegroups.com",
@@ -22,7 +25,11 @@
         "github:raspberrypi/pico-sdk"
     ],
     "versions": [
-        "1.6.0-rc1"
+        "1.6.0-rc1",
+        "2.0.0",
+        "2.1.0",
+        "2.1.1-develop.bcr.20250113-4b6e6475",
+        "2.1.1"
     ],
     "yanked_versions": {}
 }
