@@ -1,6 +1,6 @@
 --- /dev/null
 +++ MODULE.bazel
-@@ -0,0 +1,39 @@
+@@ -0,0 +1,40 @@
 +module(
 +    name = "gtsam",
 +    version = "8.0.0",
@@ -10,7 +10,7 @@
 +bazel_dep(name = "bazel_skylib", version = "1.7.1")
 +bazel_dep(name = "rules_cc", version = "0.0.9")
 +bazel_dep(name = "rules_pkg", version = "0.10.1")
-+bazel_dep(name = "rules_foreign_cc", version = "0.10.1")
++bazel_dep(name = "rules_foreign_cc", version = "0.15.0")
 +
 +foreign_cc = use_extension("@rules_foreign_cc//foreign_cc:extensions.bzl", "toolchains")
 +use_repo(
@@ -40,3 +40,4 @@
 +bazel_dep(name = "boost.program_options", version = "1.87.0")
 +bazel_dep(name = "boost.signals2", version = "1.87.0")
 +bazel_dep(name = "boost.tuple", version = "1.87.0")
++bazel_dep(name = "eigen", version = "4.0.0-20241125.bcr.2")
