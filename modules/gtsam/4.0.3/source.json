@@ -5,6 +5,7 @@
     "module_dot_bazel.patch": "sha256-vP1m2DorsJkMJI6H78X4G21ufT+JmLBEq8WWgiEAD7s=",
     "cmake.patch": "sha256-L2WWRB6H9/rwNRQXCANboaxLAIinSwJcvTkco+zlpfg=",
     "eigen_dense_base.patch": "sha256-/p9YFo8eREHtn76wmqUJRlaRaN7GQ4VduBVo+C0G9wQ=",
+    "vector.patch": "sha256-VeHrvvoXDlgJTNBICBzD+OoybDCDWwjvVqiidlcL/+s=",
     "eigen_forward_declaration.patch": "sha256-YLa1V/6Phqd2hpVnYqlXmjrfBTOI4MUMyHefOe4K4Xo="
   },
   "strip_prefix": "gtsam-4.0.3",

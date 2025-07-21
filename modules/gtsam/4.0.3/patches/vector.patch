@@ -1,0 +1,10 @@
+--- gtsam/base/Vector.h
++++ gtsam/base/Vector.h
+@@ -27,6 +27,7 @@
+ 
+ #include <gtsam/global_includes.h>
+ #include <Eigen/Core>
++#include <cassert>
+ #include <iosfwd>
+ #include <list>
+ 
