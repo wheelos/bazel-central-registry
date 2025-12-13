@@ -50,6 +50,12 @@ The tool also accepts a `--version` option to update the `source.json` of a spec
    # the target can also be your target that depends on this.
    ```
 
+### Documenting the module
+
+The `source.json` permits a `docs_url` attribute pointing to the documentation.
+
+This may optionally point to an archive file of stardoc_output.proto files, see [Stardoc API Docs](./stardoc.md).
+
 ## Presubmit
 
 Every module version must pass the BCR presubmit before getting merged. The presubmit validates the correctness and consistency of module information, then runs build and test targets specified in the `presubmit.yml` file. The BCR presubmit is driven by the [bcr_presubmit.py](https://github.com/bazelbuild/continuous-integration/blob/master/buildkite/bazel-central-registry/bcr_presubmit.py) script on [Bazel CI](https://github.com/bazelbuild/continuous-integration/tree/master/buildkite#bazel-continuous-integration).
@@ -201,6 +207,10 @@ To be submitted, a PR needs to:
   - If you see your presubmit check stuck on "blocked", a BCR maintainer needs to explicitly unblock the presubmit run or apply the `presubmit-auto-run` label to your PR. This is to avoid abuse of our CI system. Feel free to ping `@bazelbuild/bcr-maintainers` if you're blocked on this.
 - Pass certain other checks, especially for first-time contributors, such as CLA signing or GitHub workflows that require approval from BCR maintainers.
 
+In case a release is broken, the PR to publish it may never be merged.
+Module maintainers can ask the `bazel-io` bot to close a PR by commenting `@bazel-io abandon` on the PR thread.
+This is intended for cases where the PR is opened by a bot account, and helps BCR maintainers keep the PR backlog manageable.
+
 ## Module versions
 
 Bazel has a diverse ecosystem, and projects use a variety of versioning schemes. Bazel modules have a fairly relaxed [version format](https://bazel.build/external/module#version_format), which covers most version strings used by open-source projects. Thus, modules submitted to the BCR are generally versioned according to their upstream project's versions.
@@ -211,7 +221,7 @@ To ensure reproducibility, the BCR is add-only; that is, existing versions of a 
 
 ### Pseudo-versions
 
-If upstream hasn't released a new version in a long time (for example, due to project owner inactivity), but you'd still like to submit a version based on a main branch commit, the convention is to use a [pseudo-version](https://go.dev/ref/mod#pseudo-versions) similar to the one in the Go module system. Unlike in Go, such pseudo-versions are not semantically significant; they're just treated normally as any other version string. For example, if `foo`'s current version is `1.19.0`, you can submit a new version `1.19.1-20250305180549-abcdef`. This can also be combined with the `.bcr.<N>` suffix if necessary.
+If upstream hasn't released a new version in a long time (for example, due to project owner inactivity), but you'd still like to submit a version based on a main branch commit, the convention is to use a [pseudo-version](https://go.dev/ref/mod#pseudo-versions) similar to the one in the Go module system. Unlike in Go, such pseudo-versions are not semantically significant; they're just treated normally as any other version string. For example, if `foo`'s current version is `1.19.0`, you can submit a new version `1.19.1-20250305-abcdef`. This can also be combined with the `.bcr.<N>` suffix if necessary.
 
 ### Yank a module version
 
