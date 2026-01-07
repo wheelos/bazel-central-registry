@@ -1,0 +1,23 @@
+# load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+genrule(
+    name = "check_net_executable.sh",
+    srcs = ["check_net.sh"],
+    outs = ["check_net_executable.sh"],
+    cmd = "cp $(location check_net.sh) $@ && chmod +x $@",
+    visibility = ["//visibility:private"],
+)
+
+# TODO: fix this target, for now, innovusion_lidar_util cannot be invoked due to the output dir structure limits of bazel
+sh_binary(
+    name = "check_net",
+    srcs = [":check_net_executable.sh"],
+    data = [
+        "//apps/tools/get_pcd",
+        "//apps/tools/lidar_util:innovusion_lidar_util",
+    ],
+)
+
+exports_files(["check_net.sh"])
