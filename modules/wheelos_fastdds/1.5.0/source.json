@@ -1,0 +1,9 @@
+{
+    "integrity": "sha256-NdAP5mQsLhRbjIlwd9Y8XCl6PNF0HekBfZRk6NO3IT0=",
+    "patch_strip": 0,
+    "patches": {
+        "lock.patch": "sha256-I4v7zrV63q+NSLelSDKK7PEFlCEEwHLnjsPeFu58weQ="
+    },
+    "strip_prefix": "Fast-DDS-1.5.0",
+    "url": "https://github.com/wheelos/Fast-DDS/archive/refs/tags/1.5.0.tar.gz"
+}

@@ -1,0 +1,9 @@
+{
+    "integrity": "sha256-MjyaTR3wIvKX6GtZ/PeJpaHj0HPqD0eqfZDpbaGIDts=",
+    "patch_strip": 0,
+    "patches": {
+        "string_serialize.patch": "sha256-U4z6nI4PFSGY9VFUdCLzi7D3WjkEOFk8YO6lA79XoFs="
+    },
+    "strip_prefix": "Fast-CDR-1.1.0",
+    "url": "https://github.com/wheelos/Fast-CDR/archive/refs/tags/v1.1.0.tar.gz"
+}

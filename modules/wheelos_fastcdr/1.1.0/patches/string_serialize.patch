@@ -1,0 +1,107 @@
+diff --git include/fastcdr/Cdr.h include/fastcdr/Cdr.h
+index 8eb52d5..d963ee3 100644
+--- include/fastcdr/Cdr.h
++++ include/fastcdr/Cdr.h
+@@ -726,6 +726,7 @@ namespace eprosima
+                  * @exception exception::NotEnoughMemoryException This exception is thrown when trying to serialize a position that exceeds the internal memory size.
+                  */
+                 Cdr& serialize(const char *string_t);
++                Cdr& serialize(const char *string_t, size_t length);
+
+                 /*!
+                  * @brief This function serializes a string with a different endianness.
+@@ -735,6 +736,7 @@ namespace eprosima
+                  * @exception exception::NotEnoughMemoryException This exception is thrown when trying to serialize a position that exceeds the internal memory size.
+                  */
+                 Cdr& serialize(const char *string_t, Endianness endianness);
++                Cdr& serialize(const char *string_t, size_t length, Endianness endianness);
+
+ 				//TODO
+ 				inline Cdr& serialize(char *string_t) {return serialize((const char*)string_t);}
+@@ -749,7 +751,7 @@ namespace eprosima
+                  * @exception exception::NotEnoughMemoryException This exception is thrown when trying to serialize a position that exceeds the internal memory size.
+                  */
+ 				inline
+-					Cdr& serialize(const std::string &string_t) {return serialize(string_t.c_str());}
++					Cdr& serialize(const std::string &string_t) {return serialize(string_t.c_str(), string_t.size());}
+
+                 /*!
+                  * @brief This function serializes a std::string with a different endianness.
+@@ -759,7 +761,7 @@ namespace eprosima
+                  * @exception exception::NotEnoughMemoryException This exception is thrown when trying to serialize a position that exceeds the internal memory size.
+                  */
+ 				inline
+-                Cdr& serialize(const std::string &string_t, Endianness endianness)  {return serialize(string_t.c_str(), endianness);}
++                Cdr& serialize(const std::string &string_t, Endianness endianness)  {return serialize(string_t.c_str(), string_t.size(), endianness);}
+
+ #if HAVE_CXX0X
+                 /*!
+diff --git src/cpp/Cdr.cpp src/cpp/Cdr.cpp
+index b9c6e7b..e4d1774 100644
+--- src/cpp/Cdr.cpp
++++ src/cpp/Cdr.cpp
+@@ -570,6 +570,38 @@ Cdr& Cdr::serialize(const char *string_t)
+     return *this;
+ }
+
++Cdr& Cdr::serialize(const char *string_t, size_t str_length)
++{
++    uint32_t length = 0;
++
++    if(string_t != nullptr)
++        length = (uint32_t)str_length + 1;
++
++    if(length > 0)
++    {
++        Cdr::state state(*this);
++        serialize(length);
++
++        if(((m_lastPosition - m_currentPosition) >= length) || resize(length))
++        {
++            // Save last datasize.
++            m_lastDataSize = sizeof(uint8_t);
++
++            m_currentPosition.memcopy(string_t, length);
++            m_currentPosition += length;
++        }
++        else
++        {
++            setState(state);
++            throw NotEnoughMemoryException(NotEnoughMemoryException::NOT_ENOUGH_MEMORY_MESSAGE_DEFAULT);
++        }
++    }
++    else
++        serialize(length);
++
++    return *this;
++}
++
+ Cdr& Cdr::serialize(const char *string_t, Endianness endianness)
+ {
+     bool auxSwap = m_swapBytes;
+@@ -589,6 +621,25 @@ Cdr& Cdr::serialize(const char *string_t, Endianness endianness)
+     return *this;
+ }
+
++Cdr& Cdr::serialize(const char *string_t, size_t length, Endianness endianness)
++{
++    bool auxSwap = m_swapBytes;
++    m_swapBytes = (m_swapBytes && (m_endianness == endianness)) || (!m_swapBytes && (m_endianness != endianness));
++
++    try
++    {
++        serialize(string_t, length);
++        m_swapBytes = auxSwap;
++    }
++    catch(Exception &ex)
++    {
++        m_swapBytes = auxSwap;
++        ex.raise();
++    }
++
++    return *this;
++}
++
+ Cdr& Cdr::serializeArray(const bool *bool_t, size_t numElements)
+ {
+     size_t totalSize = sizeof(*bool_t)*numElements;

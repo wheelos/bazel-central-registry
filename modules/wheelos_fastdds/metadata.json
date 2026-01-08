@@ -1,0 +1,16 @@
+{
+    "homepage": "https://github.com/wheelos/Fast-DDS",
+    "maintainers": [
+        {
+            "email": "daohu527@gmail.com",
+            "github": "daohu527"
+        }
+    ],
+    "repository": [
+        "github:wheelos/Fast-DDS"
+    ],
+    "versions": [
+        "1.5.0"
+    ],
+    "yanked_versions": {}
+}

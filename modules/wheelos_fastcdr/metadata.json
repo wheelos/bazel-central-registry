@@ -1,0 +1,16 @@
+{
+    "homepage": "https://github.com/wheelos/Fast-CDR",
+    "maintainers": [
+        {
+            "email": "daohu527@gmail.com",
+            "github": "daohu527"
+        }
+    ],
+    "repository": [
+        "github:wheelos/Fast-CDR"
+    ],
+    "versions": [
+        "1.1.0"
+    ],
+    "yanked_versions": {}
+}
