@@ -1,11 +1,7 @@
 matrix:
   platform:
   - ubuntu2004
-<<<<<<< HEAD
   - ubuntu2004_arm64
-=======
-  - ubuntu2004_arm64
->>>>>>> _tmp_pr_9
   bazel:
   - 7.x
   - 8.x

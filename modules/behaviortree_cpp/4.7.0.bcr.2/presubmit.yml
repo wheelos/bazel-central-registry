@@ -8,13 +8,9 @@ matrix:
     - ubuntu2404_arm64
     - macos_arm64
     - ubuntu2204
-<<<<<<< HEAD
-    - ubuntu2404
-=======
     - ubuntu2204_arm64
     - ubuntu2404
     - ubuntu2404_arm64
->>>>>>> _tmp_pr_9
     # Not currently supported
     # - windows
   bazel:

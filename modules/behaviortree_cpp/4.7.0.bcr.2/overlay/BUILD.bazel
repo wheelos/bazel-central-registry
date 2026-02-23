@@ -28,7 +28,6 @@ cc_library(
                "@platforms//os:windows": WINDOWS_SRCS,
                "//conditions:default": UNIX_SRCS,
            }),
-<<<<<<< HEAD
     hdrs = glob(
         [
             "include/**/*.h",
@@ -39,18 +38,6 @@ cc_library(
             "include/behaviortree_cpp/contrib/magic_enum.hpp",
         ],
     ),
-=======
-    hdrs = glob(
-        [
-            "include/**/*.h",
-            "include/**/*.hpp",
-        ],
-        exclude = [
-            "include/behaviortree_cpp/contrib/json.hpp",
-            "include/behaviortree_cpp/contrib/magic_enum.hpp",
-        ],
-    ),
->>>>>>> _tmp_pr_9
     # IMPORTANT: module_version() MUST be in the form of X.Y.Z
     defines = ['BTCPP_LIBRARY_VERSION=\\"' + module_version() + '\\"'],
     includes = ["include"],
@@ -62,19 +49,11 @@ cc_library(
         "@flatbuffers",
         "@lexy",
         "@libzmq",
-<<<<<<< HEAD
         "@magic_enum",
         "@minicoro",
         "@minitrace",
         "@ncurses",
         "@nlohmann_json//:json",
-=======
-        "@magic_enum",
-        "@minicoro",
-        "@minitrace",
-        "@ncurses",
-        "@nlohmann_json//:json",
->>>>>>> _tmp_pr_9
         "@tinyxml2",
     ],
 )
