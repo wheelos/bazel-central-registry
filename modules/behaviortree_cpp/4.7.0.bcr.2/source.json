@@ -2,9 +2,9 @@
     "url": "https://github.com/BehaviorTree/BehaviorTree.CPP/archive/refs/tags/4.7.0.tar.gz",
     "integrity": "sha256-7nGiDaokW0qOsnyDUrDLFEgxxFa9rE7YlGlKH3jkB9o=",
     "strip_prefix": "BehaviorTree.CPP-4.7.0",
-        "overlay": {
-                "BUILD.bazel": "sha256-ktzcL2VlEZNhL+7Bktzs7rM2hLoGtovXHUnIhlOc7XU="
-        },
+    "overlay": {
+        "BUILD.bazel": "sha256-ktzcL2VlEZNhL+7Bktzs7rM2hLoGtovXHUnIhlOc7XU="
+    },
     "patches": {
         "bt_test_folder_bazel.patch": "sha256-wXMkZYXoK+k0t7kthGscBV4gfeGtFWrowlBzh4R93DI=",
         "cpp-sqlite_bazel_compat.patch": "sha256-1vn8gxfQKTr1o0I9HxyeaJS8rpmM+o1mbwJKWgg34HE=",
