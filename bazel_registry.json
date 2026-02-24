@@ -1,3 +1,5 @@
 {
-    "mirrors": []
+    "mirrors": [
+        "https://dl.wheelos.cn/deps/"
+    ]
 }
