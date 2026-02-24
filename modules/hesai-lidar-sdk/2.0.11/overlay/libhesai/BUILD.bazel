@@ -1,0 +1,255 @@
+# Hesai Lidar SDK - Internal Libraries
+# Based on libhesai/CMakeLists.txt logic
+#
+# Note: This project uses a template pattern where .cc files are included
+# at the end of header files. These .cc files must be treated as textual_hdrs
+# in Bazel to make them available for inclusion.
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Common compile flags
+HESAI_COPTS = select({
+    "@platforms//os:windows": ["/source-charset:utf-8"],
+    "@platforms//os:linux": ["-Wall"],
+    "//conditions:default": ["-Wall"],
+})
+
+# ============================================
+# Logger Library (log_lib)
+# ============================================
+cc_library(
+    name = "log_lib",
+    srcs = ["Logger/src/logger.cc"],
+    hdrs = ["Logger/include/logger.h"],
+    includes = ["Logger/include"],
+    linkopts = select({
+        "@platforms//os:linux": ["-lpthread"],
+        "@platforms//os:windows": [],
+        "//conditions:default": [],
+    }),
+    copts = HESAI_COPTS,
+)
+
+# ============================================
+# Platform Utils Library (platutils_lib)
+# ============================================
+cc_library(
+    name = "platutils_lib",
+    srcs = [
+        "Common/src/plat_utils.cc",
+        "Common/src/auto_tick_count.cc",
+    ],
+    hdrs = [
+        "Common/include/plat_utils.h",
+        "Common/include/auto_tick_count.h",
+        "Common/include/hs_com.h",
+        "Common/include/inner_com.h",
+        "Common/include/byte_printer.h",
+        "Common/include/csv_reader.hpp",
+    ],
+    deps = [":log_lib"],
+    includes = ["Common/include"],
+    copts = HESAI_COPTS,
+)
+
+# ============================================
+# Container Library (container_lib)
+# Template library with .cc files included by headers
+# ============================================
+cc_library(
+    name = "container_lib",
+    hdrs = [
+        "Container/include/blocking_ring.h",
+        "Container/include/ring.h",
+    ],
+    textual_hdrs = [
+        "Container/src/ring.cc",
+        "Container/src/blocking_ring.cc",
+    ],
+    includes = ["Container/include", "Container/src"],
+    copts = HESAI_COPTS,
+)
+
+# ============================================
+# UDP Parser Library (udpParser_lib)
+# Template library - most .cc files are included by headers
+# ============================================
+cc_library(
+    name = "udpParser_lib",
+    hdrs = [
+        "UdpParser/udp_parser.h",
+        "UdpParser/include/general_parser.h",
+        "UdpParser/include/udp_p40_parser.h",
+        "UdpParser/include/udp_p64_parser.h",
+        "UdpParser/include/udp1_4_parser.h",
+        "UdpParser/include/udp1_8_parser.h",
+        "UdpParser/include/udp3_1_parser.h",
+        "UdpParser/include/udp3_2_parser.h",
+        "UdpParser/include/udp4_3_parser.h",
+        "UdpParser/include/udp4_7_parser.h",
+        "UdpParser/include/udp6_1_parser.h",
+        "UdpParser/include/udp7_2_parser.h",
+        # Protocol headers
+        "UdpProtocol/fault_message.h",
+        "UdpProtocol/udp_protocol_header.h",
+        "UdpProtocol/udp_protocol_p40.h",
+        "UdpProtocol/udp_protocol_p64.h",
+        "UdpProtocol/udp_protocol_v1_4.h",
+        "UdpProtocol/udp_protocol_v1_8.h",
+        "UdpProtocol/udp_protocol_v3_1.h",
+        "UdpProtocol/udp_protocol_v3_2.h",
+        "UdpProtocol/udp_protocol_v4_3.h",
+        "UdpProtocol/udp_protocol_v4_7.h",
+        "UdpProtocol/udp_protocol_v6_1.h",
+        "UdpProtocol/udp_protocol_v7_2.h",
+        # Global headers
+        "lidar_types.h",
+        "driver_param.h",
+    ],
+    # These .cc files are included by headers as template implementations
+    textual_hdrs = [
+        "UdpParser/udp_parser.cc",
+        "UdpParser/src/general_parser.cc",
+        "UdpParser/src/udp_p40_parser.cc",
+        "UdpParser/src/udp_p64_parser.cc",
+        "UdpParser/src/udp1_4_parser.cc",
+        "UdpParser/src/udp1_8_parser.cc",
+        "UdpParser/src/udp3_1_parser.cc",
+        "UdpParser/src/udp3_2_parser.cc",
+        "UdpParser/src/udp4_3_parser.cc",
+        "UdpParser/src/udp4_7_parser.cc",
+        "UdpParser/src/udp6_1_parser.cc",
+        "UdpParser/src/udp7_2_parser.cc",
+    ],
+    deps = [
+        ":log_lib",
+        ":platutils_lib",
+    ],
+    includes = [
+        "UdpParser",
+        "UdpParser/include",
+        "UdpParser/src",
+        "UdpProtocol",
+        ".",
+    ],
+    copts = HESAI_COPTS,
+)
+
+# ============================================
+# PTC Client Library (ptcClient_lib)
+# ============================================
+cc_library(
+    name = "ptcClient_lib",
+    srcs = [
+        "PtcClient/src/ptc_client.cc",
+        "PtcClient/src/tcp_client.cc",
+        "PtcParser/src/general_ptc_parser.cc",
+        "PtcParser/src/ptc_1_0_parser.cc",
+        "PtcParser/src/ptc_2_0_parser.cc",
+        "PtcParser/ptc_parser.cc",
+    ],
+    hdrs = [
+        "PtcClient/include/ptc_client.h",
+        "PtcClient/include/tcp_client.h",
+        "PtcClient/include/client_base.h",
+        "PtcClient/include/tcp_ssl_client.h",
+        "PtcClient/include/lidar_communication_header.h",
+        "PtcParser/ptc_parser.h",
+        "PtcParser/include/general_ptc_parser.h",
+        "PtcParser/include/ptc_1_0_parser.h",
+        "PtcParser/include/ptc_2_0_parser.h",
+        # Global headers
+        "lidar_types.h",
+        "driver_param.h",
+    ],
+    deps = [":platutils_lib"],
+    includes = [
+        "PtcClient/include",
+        "PtcParser",
+        "PtcParser/include",
+        ".",
+    ],
+    copts = HESAI_COPTS,
+)
+
+# ============================================
+# Source Library (source_lib)
+# ============================================
+cc_library(
+    name = "source_lib",
+    srcs = [
+        "Source/src/source.cc",
+        "Source/src/socket_source.cc",
+        "Source/src/pcap_source.cc",
+        "Source/src/serial_source.cc",
+        "Source/src/tcp_source.cc",
+        "Source/src/pcap_saver.cc",
+    ],
+    hdrs = [
+        "Source/include/source.h",
+        "Source/include/socket_source.h",
+        "Source/include/pcap_source.h",
+        "Source/include/serial_source.h",
+        "Source/include/tcp_source.h",
+        "Source/include/pcap_saver.h",
+        # Global headers needed by source.h
+        "lidar_types.h",
+        "driver_param.h",
+    ],
+    deps = [
+        ":platutils_lib",
+        ":container_lib",
+        ":log_lib",
+    ],
+    includes = [
+        "Source/include",
+        ".",
+    ],
+    copts = HESAI_COPTS,
+)
+
+# ============================================
+# Serial Client Library (serialClient_lib)
+# ============================================
+cc_library(
+    name = "serialClient_lib",
+    srcs = ["SerialClient/src/serial_client.cc"],
+    hdrs = ["SerialClient/include/serial_client.h"],
+    deps = [":source_lib"],
+    includes = ["SerialClient/include"],
+    copts = HESAI_COPTS,
+)
+
+# ============================================
+# Lidar Library (lidar_lib)
+# Template library - lidar.cc is included by lidar.h
+# ============================================
+cc_library(
+    name = "lidar_lib",
+    hdrs = [
+        "Lidar/lidar.h",
+        "lidar_types.h",
+        "driver_param.h",
+    ],
+    textual_hdrs = ["Lidar/lidar.cc"],
+    deps = [
+        ":log_lib",
+        ":platutils_lib",
+        ":udpParser_lib",
+        ":ptcClient_lib",
+        ":source_lib",
+        ":serialClient_lib",
+    ],
+    includes = [
+        "Lidar",
+        ".",
+    ],
+    linkopts = select({
+        "@platforms//os:linux": ["-lpthread"],
+        "@platforms//os:windows": [],
+        "//conditions:default": [],
+    }),
+    copts = HESAI_COPTS,
+)

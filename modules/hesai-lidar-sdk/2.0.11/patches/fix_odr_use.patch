@@ -1,0 +1,12 @@
+diff --git a/libhesai/Source/src/pcap_source.cc b/libhesai/Source/src/pcap_source.cc
+--- a/libhesai/Source/src/pcap_source.cc
++++ b/libhesai/Source/src/pcap_source.cc
+@@ -99,7 +99,7 @@ public:
+     // 当前文件偏移
+     size_t _fpos;
+     // 块大小
+-    static const size_t CHUNK_SIZE = 64 * 1024 * 1024; // 64MB
++    static constexpr size_t CHUNK_SIZE = 64 * 1024 * 1024; // 64MB
+     // 是否已经映射
+     bool _is_mapped;
+
