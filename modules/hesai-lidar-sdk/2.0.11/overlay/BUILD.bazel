@@ -1,0 +1,35 @@
+# Hesai Lidar SDK - Bazel Build
+# Based on CMakeLists.txt logic
+
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "hesai_sdk_lib",
+    srcs = ["driver/hesai_lidar_sdk.cc"],
+    hdrs = ["driver/hesai_lidar_sdk.hpp"],
+    include_prefix = "hesai",
+    strip_include_prefix = "driver",
+    deps = [
+        "//libhesai:lidar_lib",
+    ],
+    includes = ["driver"],
+    linkopts = select({
+        "@platforms//os:linux": ["-lpthread"],
+        "@platforms//os:windows": [],
+        "//conditions:default": [],
+    }),
+)
+
+cc_binary(
+    name = "sample",
+    srcs = ["test/test.cc"],
+    deps = [":hesai_sdk_lib"],
+)
+
+cc_binary(
+    name = "multi_test",
+    srcs = ["test/multi_test.cc"],
+    deps = [":hesai_sdk_lib"],
+)

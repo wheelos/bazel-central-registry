@@ -1,0 +1,14 @@
+{
+    "integrity": "sha256-FlWvdY68SjKNTtssfGnDNkMTvBgUtlKZCjW4VuLdnkY=",
+    "strip_prefix": "HesaiLidar_SDK_2.0-2.0.11",
+    "url": "https://github.com/HesaiTechnology/HesaiLidar_SDK_2.0/archive/refs/tags/v2.0.11.tar.gz",
+    "patch_strip": 1,
+    "overlay": {
+        "BUILD.bazel": "sha256-AGSZQGrMyDHyRTuS/ZEw7YV9AbApBARP14PGfNu7uaE=",
+        "MODULE.bazel": "sha256-nV7qhJWVe52vXDE9EZJvG7u5wMgFOu7P3yKzYLtiILI=",
+        "libhesai/BUILD.bazel": "sha256-a5ZdkoLHlGNv2t+HywxA9kuP3sVHG+IZbMU7SI0huUc="
+    },
+    "patches": {
+        "fix_odr_use.patch": "sha256-qmWa3/gvvb7YvJ25KJ19DuWN77ZKbWmG/RKuJmx5aRA="
+    }
+}
