@@ -8,8 +8,11 @@ on:
 
 jobs:
   deploy:
-    if: github.repository == 'wheelos/bazel-central-registry'
+    if: github.repository == 'wheelos/bazel-central-registry' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
     runs-on: ubuntu-latest
+    concurrency:
+      group: sync-r2-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
