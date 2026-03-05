@@ -1,0 +1,16 @@
+matrix:
+  platform:
+    - ubuntu2004
+    - ubuntu2004_arm64
+  bazel:
+    - 7.x
+    - 8.x
+tasks:
+  verify_targets:
+    platform: ${{ platform }}
+    bazel: ${{ bazel }}
+    build_flags:
+      - '--cxxopt=-std=c++17'
+      - '--host_cxxopt=-std=c++17'
+    build_targets:
+      - '@robosense-lidar-sdk//:rs_driver'

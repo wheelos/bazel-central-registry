@@ -1,0 +1,6 @@
+module(
+    name = "robosense-lidar-sdk",
+    version = "1.5.18",
+)
+
+bazel_dep(name = "rules_cc", version = "0.0.9")

@@ -1,0 +1,18 @@
+{
+    "homepage": "https://github.com/RoboSense-LiDAR/rs_driver",
+    "maintainers": [
+        {
+            "email": "lykling.lyk@gmail.com",
+            "github": "lykling",
+            "github_user_id": 1845733,
+            "name": "Pride Leong"
+        }
+    ],
+    "repository": [
+        "github:RoboSense-LiDAR/rs_driver"
+    ],
+    "versions": [
+        "1.5.18"
+    ],
+    "yanked_versions": {}
+}

@@ -1,0 +1,9 @@
+{
+    "url": "https://github.com/RoboSense-LiDAR/rs_driver/archive/refs/tags/v1.5.18.tar.gz",
+    "strip_prefix": "rs_driver-1.5.18",
+    "integrity": "sha256-PiDIlzT2Zy8cjZ7ng/KcwotGYbBNFqmuUNxIYQVkv3w=",
+    "overlay": {
+        "BUILD.bazel": "sha256-/aeU5E+lX4pW315U0KYp/T+BpmVteAjhe/B5Q/FpujI=",
+        "MODULE.bazel": "sha256-gfSydJGjDuT1gEmjNl9I5Y8lvnG9Hcmgw6ged4BNKug="
+    }
+}
