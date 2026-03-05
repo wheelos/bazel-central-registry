@@ -1,0 +1,18 @@
+{
+    "homepage": "https://github.com/wheelos/vanjee_driver",
+    "maintainers": [
+        {
+            "email": "lykling.lyk@gmail.com",
+            "github": "lykling",
+            "github_user_id": 1845733,
+            "name": "Pride Leong"
+        }
+    ],
+    "repository": [
+        "github:wheelos/vanjee_driver"
+    ],
+    "versions": [
+        "2.2.9"
+    ],
+    "yanked_versions": {}
+}

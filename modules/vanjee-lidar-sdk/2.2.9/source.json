@@ -1,0 +1,9 @@
+{
+    "url": "https://github.com/wheelos/vanjee_driver_sdk/archive/refs/tags/v2.2.9.tar.gz",
+    "strip_prefix": "vanjee_driver-2.2.9",
+    "integrity": "sha256-xKn2pTEWAAROXXIRv87DsG2GrNqUVrBg0MDgVLn4M7s=",
+    "overlay": {
+        "BUILD.bazel": "sha256-eC34nhZvXnJ5JcZ3gPZ60UE4p1kaae6iL5/gimAco9E=",
+        "MODULE.bazel": "sha256-SDwVwDn4lUVjxODFPPCnC5j2vK4LekpmfI3pLg6aANE="
+    }
+}
