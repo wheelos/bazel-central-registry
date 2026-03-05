@@ -1,0 +1,36 @@
+--- bazel/gflags.bzl
++++ bazel/gflags.bzl
+@@ -93,11 +93,32 @@ def gflags_library(hdrs=[], srcs=[], thr
+         name += "_nothreads"
+         copts += ["-DNO_THREADS"]
+     native.cc_library(
+-        name       = name,
++        name       = name + "_",
+         hdrs       = hdrs,
+         srcs       = srcs,
+         copts      = copts,
+         linkopts   = linkopts,
++        alwayslink = True,
++        visibility = ["//visibility:public"],
++        include_prefix = 'gflags'
++    )
++    native.cc_binary(
++        name       = "lib" + name + ".so",
++        copts      = copts,
++        linkopts   = linkopts,
++        linkshared = True,
++        linkstatic = True,
++        deps       = [":" + name + "_"],
++        visibility = ["//visibility:public"],
++    )
++    native.cc_library(
++        name       = name,
++        hdrs       = hdrs,
++        srcs       = [":lib" + name + ".so"],
++        copts      = copts,
++        linkopts   = linkopts,
++        alwayslink = True,
+         visibility = ["//visibility:public"],
+         include_prefix = 'gflags'
+     )
++

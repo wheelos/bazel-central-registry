@@ -4,6 +4,7 @@
     "url": "https://github.com/gflags/gflags/archive/refs/tags/v2.2.2.tar.gz",
     "patch_strip": 0,
     "patches": {
-        "module_dot_bazel.patch": "sha256-BVSk+8ijV+s6djcokSgSZGlP153Q+rvF2h9W/AG53Zo="
+        "module_dot_bazel.patch": "sha256-BVSk+8ijV+s6djcokSgSZGlP153Q+rvF2h9W/AG53Zo=",
+        "bazel.patch": "sha256-csdBW5pi9EUkv5sAQQDSGMiRHCoec3CG2PQzc1f1Sa0="
     }
 }
