@@ -1,0 +1,20 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+cc_binary(
+    name = "hub_lvx_sample",
+    srcs = [
+        "lvx_file.cpp",
+        "lvx_file.h",
+        "main.cpp",
+    ],
+    copts = ["-std=c++11"],
+    linkopts = ["-pthread"],
+    visibility = ["//visibility:public"],
+    deps = ["//sdk_core"],
+)
+
+alias(
+    name = "hub_lvx_file",
+    actual = ":hub_lvx_sample",
+    visibility = ["//visibility:public"],
+)

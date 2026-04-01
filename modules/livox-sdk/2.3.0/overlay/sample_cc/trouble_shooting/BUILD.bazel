@@ -1,0 +1,10 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+cc_binary(
+    name = "trouble_shooting",
+    srcs = ["main.cpp"],
+    copts = ["-std=c++11"],
+    linkopts = ["-pthread"],
+    visibility = ["//visibility:public"],
+    deps = ["//sdk_core"],
+)

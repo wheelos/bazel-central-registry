@@ -1,0 +1,22 @@
+{
+    "url": "https://github.com/Livox-SDK/Livox-SDK/archive/refs/tags/v2.3.0.tar.gz",
+    "integrity": "sha256-iN2LrucaZcf+d7WxrCZSHPTpyvCyZHNE5JP8/bVfHRk=",
+    "strip_prefix": "Livox-SDK-2.3.0",
+    "overlay": {
+        "BUILD.bazel": "sha256-WeeUUxKFIWEh2JD9kJTjotvIZztLFZd0j8zaJfu+t3A=",
+        "MODULE.bazel": "sha256-v+6s0ktRciHXLIsRcqOvNvpPEcMRf88NxdKqyHKB7lI=",
+        "sample/hub/BUILD.bazel": "sha256-yBON7+7OZU5qn2uMvJvGBbd4OFz//JR4xNBuuxKa62Y=",
+        "sample/hub_lvx_file/BUILD.bazel": "sha256-gd5//cB/KEbavToSFb/dAmRwePRBDz0uKLVH6qrzYGE=",
+        "sample/lidar/BUILD.bazel": "sha256-myg8x3FNkYEEB2bjBf57WsUUGQTD+DrPimc6JKeD6xY=",
+        "sample/lidar_lvx_file/BUILD.bazel": "sha256-VWZi5sHq9pj+Lzdg4NJYw1J98cIIW4R5wkDIKhby7jw=",
+        "sample_cc/hub/BUILD.bazel": "sha256-S2frTeGuftxEYPGL8B6H3/cV1QienyaNEUhmcipvEUM=",
+        "sample_cc/lidar/BUILD.bazel": "sha256-8lu4mWgp9+kSYmomgO9q5AjJjRSuJbNqNt1E2yCo7L8=",
+        "sample_cc/lidar_utc_sync/BUILD.bazel": "sha256-DoM0Lpq3LERGZ8BWAsvKosaAfJ0/QB2VO34CNjrkFGE=",
+        "sample_cc/trouble_shooting/BUILD.bazel": "sha256-OGv/GR/94sDQIjp8eZxF1ry46pnXG8ROziG/sZyQfH0=",
+        "sdk_core/BUILD.bazel": "sha256-JXARkyOJ4T6qzywZgDU2j051UxPEkJQShzOjdFrV77o="
+    },
+    "patch_strip": 1,
+    "patches": {
+        "gcc_compat.patch": "sha256-Sy9nlVacRlefC3Ix6BXrhPCCcsusr8h3kT0sPVh8CsQ="
+    }
+}

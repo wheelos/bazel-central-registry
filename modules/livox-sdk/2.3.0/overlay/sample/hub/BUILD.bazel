@@ -1,0 +1,16 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+cc_binary(
+    name = "hub_sample",
+    srcs = ["main.c"],
+    copts = ["-std=c11"],
+    linkopts = ["-pthread"],
+    visibility = ["//visibility:public"],
+    deps = ["//sdk_core"],
+)
+
+alias(
+    name = "hub",
+    actual = ":hub_sample",
+    visibility = ["//visibility:public"],
+)

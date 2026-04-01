@@ -1,0 +1,13 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "sdk_core",
+    visibility = ["//visibility:public"],
+    deps = ["//sdk_core"],
+)
+
+cc_library(
+    name = "livox-sdk",
+    visibility = ["//visibility:public"],
+    deps = ["//sdk_core"],
+)

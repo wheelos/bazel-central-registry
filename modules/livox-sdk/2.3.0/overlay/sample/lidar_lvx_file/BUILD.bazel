@@ -1,0 +1,21 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+cc_binary(
+    name = "lidar_lvx_sample",
+    srcs = glob([
+        "lvx_file.cpp",
+        "lvx_file.h",
+        "main.cpp",
+        "third_party/**/*.hpp",
+    ]),
+    copts = ["-std=c++11"],
+    linkopts = ["-pthread"],
+    visibility = ["//visibility:public"],
+    deps = ["//sdk_core"],
+)
+
+alias(
+    name = "lidar_lvx_file",
+    actual = ":lidar_lvx_sample",
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,89 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+# 根据 CMakeLists.txt 的目标名：livox_sdk_static
+cc_library(
+    name = "livox_sdk_static",
+    srcs = [
+        # Common source files
+        "src/livox_sdk.cpp",
+        "src/device_discovery.cpp",
+        "src/device_manager.cpp",
+        "src/comm/comm_port.cpp",
+        "src/comm/sdk_protocol.cpp",
+        "src/data_handler/data_handler.cpp",
+        "src/data_handler/hub_data_handler.cpp",
+        "src/data_handler/lidar_data_handler.cpp",
+        "src/command_handler/command_handler.cpp",
+        "src/command_handler/command_channel.cpp",
+        "src/command_handler/hub_command_handler.cpp",
+        "src/command_handler/lidar_command_handler.cpp",
+        "src/command_handler/command_impl.cpp",
+        "src/base/io_loop.cpp",
+        "src/base/io_thread.cpp",
+        "src/base/thread_base.cpp",
+        "src/base/logging.cpp",
+        "src/base/multiple_io/multiple_io_base.cpp",
+        "src/base/multiple_io/multiple_io_epoll.cpp",
+        "src/base/multiple_io/multiple_io_kqueue.cpp",
+        "src/base/multiple_io/multiple_io_poll.cpp",
+        "src/base/multiple_io/multiple_io_select.cpp",
+        "src/third_party/FastCRC/FastCRCsw.cpp",
+    ] + select({
+        "@platforms//os:linux": [
+            "src/base/network/unix/network_util.cpp",
+            "src/base/wake_up/unix/wake_up_pipe.cpp",
+        ],
+        "@platforms//os:windows": [
+            "src/base/network/win/network_util.cpp",
+            "src/base/wake_up/win/wake_up_pipe.cpp",
+        ],
+        "//conditions:default": [
+            "src/base/network/unix/network_util.cpp",
+            "src/base/wake_up/unix/wake_up_pipe.cpp",
+        ],
+    }),
+    hdrs = glob(
+        [
+            "include/**/*.h",
+            "include/**/*.hpp",
+            "src/**/*.h",
+            "src/**/*.hpp",
+        ],
+        allow_empty = True,
+    ),
+    copts = select({
+        "@rules_cc//cc/compiler:clang": [
+            "-Wall",
+            "-Wno-unknown-pragmas",
+            "-Wno-c++11-long-long",
+            "-std=c++14",
+        ],
+        "@rules_cc//cc/compiler:gcc": [
+            "-Wall",
+            "-Wno-c++11-long-long",
+            "-std=c++14",
+        ],
+        "//conditions:default": [
+            "-Wall",
+            "-Wno-unknown-pragmas",
+            "-Wno-c++11-long-long",
+            "-std=c++14",
+        ],
+    }),
+    includes = [
+        "include",
+        "include/third_party/FastCRC",
+        "include/third_party/cmdline",
+        "include/third_party/spdlog",
+        "src",
+    ],
+    linkopts = ["-pthread"],
+    visibility = ["//visibility:public"],
+)
+
+# 创建目录名的 alias
+alias(
+    name = "sdk_core",
+    actual = ":livox_sdk_static",
+    visibility = ["//visibility:public"],
+)

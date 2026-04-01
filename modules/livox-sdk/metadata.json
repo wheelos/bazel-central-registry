@@ -1,0 +1,18 @@
+{
+    "homepage": "https://github.com/Livox-SDK/Livox-SDK",
+    "maintainers": [
+        {
+            "email": "lykling.lyk@gmail.com",
+            "github": "lykling",
+            "github_user_id": 1845733,
+            "name": "Pride Leong"
+        }
+    ],
+    "repository": [
+        "github:Livox-SDK/Livox-SDK"
+    ],
+    "versions": [
+        "2.3.0"
+    ],
+    "yanked_versions": {}
+}
