@@ -1,0 +1,6 @@
+{
+    "type": "git_repository",
+    "remote": "https://github.com/wheelos/wheelos_msgs.git",
+    "commit": "af20efc8925a36e3cfe91eaa204e9fdb995d6efa",
+    "patch_strip": 0
+}

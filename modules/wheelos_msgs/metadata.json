@@ -1,0 +1,18 @@
+{
+    "homepage": "https://github.com/realmovition/common_msgs",
+    "maintainers": [
+        {
+            "email": "daohu527@gmail.com",
+            "github": "daohu527",
+            "name": "daohu527",
+            "github_user_id": 10419854
+        }
+    ],
+    "repository": [
+        "https://github.com/wheelos/wheelos_msgs"
+    ],
+    "versions": [
+        "0.1.0"
+    ],
+    "yanked_versions": {}
+}
