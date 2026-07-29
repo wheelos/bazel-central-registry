@@ -1,0 +1,6 @@
+{
+    "type": "git_repository",
+    "remote": "https://github.com/wheelos/core.git",
+    "commit": "5ff7dced40488ca3110c30eab10a10fa68fdd047",
+    "patch_strip": 0
+}

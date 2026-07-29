@@ -10,7 +10,8 @@
         "github:wheelos/Fast-DDS"
     ],
     "versions": [
-        "1.5.0"
+        "1.5.0",
+        "2.14.6"
     ],
     "yanked_versions": {}
 }
