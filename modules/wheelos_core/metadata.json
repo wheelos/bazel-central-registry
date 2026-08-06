@@ -1,5 +1,5 @@
 {
-    "homepage": "https://github.com/wheelos/core",
+    "homepage": "https://github.com/realmovition/core",
     "maintainers": [
         {
             "email": "daohu527@gmail.com",
@@ -9,11 +9,10 @@
         }
     ],
     "repository": [
-        "https://github.com/wheelos/core"
+        "https://github.com/realmovition/core"
     ],
     "versions": [
-        "0.1.0",
-        "0.1.1"
+        "1.0.0"
     ],
     "yanked_versions": {}
 }
