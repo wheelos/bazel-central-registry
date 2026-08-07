@@ -12,7 +12,8 @@
         "https://github.com/wheelos/wheelos_msgs"
     ],
     "versions": [
-        "0.1.5"
+        "0.1.5",
+        "0.1.5.bcr.1"
     ],
     "yanked_versions": {}
 }
