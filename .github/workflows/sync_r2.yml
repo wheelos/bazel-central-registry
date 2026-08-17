@@ -29,7 +29,87 @@ jobs:
       #   run: |
       #     python .github/scripts/mirror_archives.py
 
-      - name: Sync to R2
+      - name: Detect changed modules
+        id: changed_modules
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BASE_SHA="${{ github.event.before }}"
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            echo "should_incremental=false" >> "$GITHUB_OUTPUT"
+            echo "module_names=" >> "$GITHUB_OUTPUT"
+            echo "No valid base SHA for push diff; falling back to full sync."
+            exit 0
+          fi
+
+          if ! git rev-parse --verify "$BASE_SHA" >/dev/null 2>&1; then
+            echo "should_incremental=false" >> "$GITHUB_OUTPUT"
+            echo "module_names=" >> "$GITHUB_OUTPUT"
+            echo "Base SHA is invalid; falling back to full sync."
+            exit 0
+          fi
+
+          CHANGED_PATHS=$(git diff --name-only "$BASE_SHA" HEAD)
+          if [ -z "$CHANGED_PATHS" ]; then
+            echo "should_incremental=false" >> "$GITHUB_OUTPUT"
+            echo "module_names=" >> "$GITHUB_OUTPUT"
+            echo "No file changes detected; falling back to full sync."
+            exit 0
+          fi
+
+          MODULES=()
+          while IFS= read -r path; do
+            case "$path" in
+              modules/*)
+                module_name="${path#modules/}"
+                module_name="${module_name%%/*}"
+                if [ -n "$module_name" ] && [ "$module_name" != "" ]; then
+                  MODULES+=("$module_name")
+                fi
+                ;;
+            esac
+          done <<< "$CHANGED_PATHS"
+
+          if [ ${#MODULES[@]} -eq 0 ]; then
+            echo "should_incremental=false" >> "$GITHUB_OUTPUT"
+            echo "module_names=" >> "$GITHUB_OUTPUT"
+            echo "No modules changed; falling back to full sync."
+            exit 0
+          fi
+
+          if printf '%s\n' "$CHANGED_PATHS" | grep -qvE '^modules/'; then
+            echo "should_incremental=false" >> "$GITHUB_OUTPUT"
+            echo "module_names=" >> "$GITHUB_OUTPUT"
+            echo "Mixed repository changes detected; falling back to full sync."
+            exit 0
+          fi
+
+          UNIQUE_MODULES=$(printf '%s\n' "${MODULES[@]}" | sort -u | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+          echo "should_incremental=true" >> "$GITHUB_OUTPUT"
+          echo "module_names=${UNIQUE_MODULES}" >> "$GITHUB_OUTPUT"
+          echo "Changed modules detected: ${UNIQUE_MODULES}"
+
+      - name: Sync changed modules to R2
+        if: steps.changed_modules.outputs.should_incremental == 'true'
+        shell: bash
+        env:
+          AWS_S3_BUCKET: "wheelos-bazel-registry"
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_S3_ENDPOINT: "https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com"
+        run: |
+          set -euo pipefail
+          for module in ${{ steps.changed_modules.outputs.module_names }}; do
+            echo "Syncing modules/$module to s3://$AWS_S3_BUCKET/modules/$module"
+            aws s3 sync "modules/$module" "s3://${AWS_S3_BUCKET}/modules/$module" \
+              --endpoint-url "$AWS_S3_ENDPOINT" \
+              --delete \
+              --no-progress
+          done
+
+      - name: Sync full repository to R2
+        if: steps.changed_modules.outputs.should_incremental != 'true'
         uses: jakejarvis/s3-sync-action@master
         with:
           args: --delete --exclude '.git/*' --exclude '.github/*'
