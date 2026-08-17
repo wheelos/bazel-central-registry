@@ -6,9 +6,12 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
-    if: github.repository == 'wheelos/bazel-central-registry' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
+    if: github.repository == 'wheelos/bazel-central-registry' && github.actor != 'github-actions[bot]' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
     runs-on: ubuntu-latest
     concurrency:
       group: sync-r2-${{ github.ref }}
@@ -16,6 +19,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # - name: Set up Python
       #   uses: actions/setup-python@v4
@@ -29,28 +34,63 @@ jobs:
       #   run: |
       #     python .github/scripts/mirror_archives.py
 
+      - name: Determine sync base
+        id: sync_base
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          STATE_FILE=".github/r2_sync_checkpoint"
+          BASE_SHA="${{ github.event.before }}"
+
+          if [ -n "$BASE_SHA" ] && [ "$BASE_SHA" != "0000000000000000000000000000000000000000" ] && git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            echo "base_sha=${BASE_SHA}" >> "$GITHUB_OUTPUT"
+            echo "source=event_before" >> "$GITHUB_OUTPUT"
+            echo "Using sync base from github.event.before: ${BASE_SHA}"
+            exit 0
+          fi
+
+          if [ -f "$STATE_FILE" ]; then
+            LAST_SYNC_SHA=$(tr -d '\r\n' < "$STATE_FILE")
+            if [ -n "$LAST_SYNC_SHA" ] && git cat-file -e "${LAST_SYNC_SHA}^{commit}" 2>/dev/null; then
+              echo "base_sha=${LAST_SYNC_SHA}" >> "$GITHUB_OUTPUT"
+              echo "source=checkpoint_file" >> "$GITHUB_OUTPUT"
+              echo "Using sync base from checkpoint file: ${LAST_SYNC_SHA}"
+              exit 0
+            fi
+          fi
+
+          if git rev-list --max-count=1 HEAD >/dev/null 2>&1; then
+            BASE_SHA=$(git rev-list --max-count=1 HEAD)
+            echo "base_sha=${BASE_SHA}" >> "$GITHUB_OUTPUT"
+            echo "source=last_commit" >> "$GITHUB_OUTPUT"
+            echo "Using fallback sync base from the most recent commit: ${BASE_SHA}"
+            exit 0
+          fi
+
+          echo "base_sha=" >> "$GITHUB_OUTPUT"
+          echo "source=none" >> "$GITHUB_OUTPUT"
+          echo "No valid sync base found; full sync will be used."
+
       - name: Detect changed modules
         id: changed_modules
         shell: bash
         run: |
           set -euo pipefail
 
-          BASE_SHA="${{ github.event.before }}"
-          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+          BASE_SHA="${{ steps.sync_base.outputs.base_sha }}"
+          echo "Comparing HEAD against base SHA: ${BASE_SHA}"
+          if [ -z "$BASE_SHA" ]; then
             echo "should_incremental=false" >> "$GITHUB_OUTPUT"
             echo "module_names=" >> "$GITHUB_OUTPUT"
-            echo "No valid base SHA for push diff; falling back to full sync."
-            exit 0
-          fi
-
-          if ! git rev-parse --verify "$BASE_SHA" >/dev/null 2>&1; then
-            echo "should_incremental=false" >> "$GITHUB_OUTPUT"
-            echo "module_names=" >> "$GITHUB_OUTPUT"
-            echo "Base SHA is invalid; falling back to full sync."
+            echo "No valid base SHA available; falling back to full sync."
             exit 0
           fi
 
           CHANGED_PATHS=$(git diff --name-only "$BASE_SHA" HEAD)
+          echo "Changed paths between ${BASE_SHA} and HEAD:"
+          printf '%s\n' "$CHANGED_PATHS"
+
           if [ -z "$CHANGED_PATHS" ]; then
             echo "should_incremental=false" >> "$GITHUB_OUTPUT"
             echo "module_names=" >> "$GITHUB_OUTPUT"
@@ -91,6 +131,7 @@ jobs:
           echo "Changed modules detected: ${UNIQUE_MODULES}"
 
       - name: Sync changed modules to R2
+        id: sync_changed
         if: steps.changed_modules.outputs.should_incremental == 'true'
         shell: bash
         env:
@@ -109,6 +150,7 @@ jobs:
           done
 
       - name: Sync full repository to R2
+        id: sync_full
         if: steps.changed_modules.outputs.should_incremental != 'true'
         uses: jakejarvis/s3-sync-action@master
         with:
@@ -119,3 +161,24 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_S3_ENDPOINT: "https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com"
           SOURCE_DIR: "."
+
+      - name: Persist sync checkpoint
+        if: github.actor != 'github-actions[bot]' && (steps.sync_changed.conclusion == 'success' || steps.sync_full.conclusion == 'success')
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          STATE_FILE=".github/r2_sync_checkpoint"
+          echo "${{ github.sha }}" > "$STATE_FILE"
+
+          if git diff --quiet -- "$STATE_FILE"; then
+            echo "No checkpoint update required."
+            exit 0
+          fi
+
+          echo "Updating sync checkpoint to ${{ github.sha }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$STATE_FILE"
+          git commit -m "chore: update R2 sync checkpoint"
+          git push
