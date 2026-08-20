@@ -1,12 +1,6 @@
 {
-    "homepage": "https://github.com/aspect-build/rules_esbuild",
+    "homepage": "https://docs.aspect.build/bazel/javascript",
     "maintainers": [
-        {
-            "email": "alex@aspect.build",
-            "github": "alexeagle",
-            "name": "Alex Eagle",
-            "github_user_id": 47395
-        },
         {
             "name": "Jason Bedard",
             "email": "jason@aspect.build",
@@ -35,7 +29,10 @@
         "0.22.1",
         "0.23.0",
         "0.24.0",
-        "0.25.0"
+        "0.25.0",
+        "0.25.1",
+        "0.26.0",
+        "0.27.0"
     ],
     "yanked_versions": {}
 }
