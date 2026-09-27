@@ -1,0 +1,18 @@
+{
+    "homepage": "https://github.com/wheelos/common",
+    "maintainers": [
+        {
+            "email": "daohu527@gmail.com",
+            "github": "daohu527",
+            "name": "daohu527",
+            "github_user_id": 10419854
+        }
+    ],
+    "repository": [
+        "https://github.com/wheelos/common"
+    ],
+    "versions": [
+        "0.1.1"
+    ],
+    "yanked_versions": {}
+}
