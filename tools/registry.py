@@ -45,7 +45,50 @@ def log(msg):
     print(f"{GREEN}INFO: {RESET}{msg}")
 
 
+# Schemes the registry tooling will fetch over the network. Anything else
+# (notably `file://`, `ftp://`, `gopher://`, `dict://`, `data:`, `jar:`) MUST
+# be rejected: this code processes URLs from PR-submitted `source.json` files
+# (`url`, `mirror_urls`, `patches`) and invoking `urllib.request.urlopen` on
+# such input with the default opener would let a PR author read local files
+# from the validation runner (e.g. `file:///proc/self/environ`,
+# `file:///etc/passwd`, `file:///run/secrets/*`) or pivot to other URL
+# protocols. HTTPS-only would be even safer; HTTP is kept here because
+# `mirror_urls` are sometimes legacy plain-HTTP mirrors. If you need a new
+# scheme for a legitimate fetch, add it here intentionally.
+ALLOWED_DOWNLOAD_SCHEMES = frozenset({"http", "https"})
+
+# `file:///dev/null` is a portable POSIX device that always reads as zero
+# bytes. It has no exfiltration value: a PR submitting
+# `{"url": "file:///dev/null"}` in `source.json` would just record
+# `sha256("")` (which is public knowledge), not leak any runner state. The
+# `tools/update_integrity_test.sh` test uses this URL as a sentinel for
+# "empty source"; allow-listing it specifically preserves that test without
+# weakening the `file://` rejection that protects against real
+# exfiltration targets such as `/etc/passwd` or `/proc/self/environ`.
+_BENIGN_FILE_URLS = frozenset({"file:///dev/null"})
+
+
+def _validate_download_url(url):
+    """Reject URLs that don't use one of `ALLOWED_DOWNLOAD_SCHEMES`.
+
+    Returns the parsed `urllib.parse.SplitResult` on success so callers don't
+    have to reparse. Raises `RegistryException` on a disallowed scheme so
+    presubmit reports a clear failure instead of silently fetching a local
+    file or a non-HTTP protocol.
+    """
+    parts = urllib.parse.urlsplit(url)
+    if url in _BENIGN_FILE_URLS:
+        return parts
+    if parts.scheme not in ALLOWED_DOWNLOAD_SCHEMES:
+        raise RegistryException(
+            f"URL `{url}` uses scheme `{parts.scheme or '(empty)'}` which is not allowed. "
+            f"BCR validation only fetches over {sorted(ALLOWED_DOWNLOAD_SCHEMES)}."
+        )
+    return parts
+
+
 def download(url):
+    _validate_download_url(url)
     authorization_header_name = "Authorization"
 
     class Github404ErrorProcessor(urllib.request.BaseHandler):
@@ -173,10 +216,10 @@ class Version:
 class Module:
     """A class to represent all information of a Bazel module."""
 
-    def __init__(self, name=None, version=None, compatibility_level=1):
+    def __init__(self, name=None, version=None):
         self.name = name
         self.version = version
-        self.compatibility_level = compatibility_level
+        self.compatibility_level = None
         self.module_dot_bazel = None
         self.url = None
         self.strip_prefix = None
@@ -252,14 +295,6 @@ class RegistryException(Exception):
 class RegistryClient:
     """A class to help create a Bazel registry."""
 
-    _MODULE_BAZEL = """
-module(
-    name = "{0}",
-    version = "{1}",
-    compatibility_level = {2},
-)
-""".strip()
-
     def __init__(self, root):
         self.root = pathlib.Path(root)
 
@@ -306,7 +341,13 @@ module(
         return self.get_version_dir(module_name, version) / PRESUBMIT_YML
 
     def get_patch_file_path(self, module_name, version, patch_name):
-        return self.get_version_dir(module_name, version) / "patches" / patch_name
+        patches_dir = (self.get_version_dir(module_name, version) / "patches").resolve()
+        patch_file = (patches_dir / patch_name).resolve()
+        try:
+            patch_file.relative_to(patches_dir)
+        except ValueError as e:
+            raise RegistryException(f"Patch file path `{patch_name}` must point inside the patches directory.") from e
+        return patch_file
 
     def get_module_dot_bazel_path(self, module_name, version):
         return self.get_version_dir(module_name, version) / "MODULE.bazel"
@@ -387,13 +428,17 @@ module(
             #   - no override is used
             shutil.copy(module.module_dot_bazel, module_dot_bazel)
         else:
-            deps = "\n".join(f'bazel_dep(name = "{name}", version = "{version}")' for name, version in module.deps)
             with module_dot_bazel.open("w") as f:
-                f.write(self._MODULE_BAZEL.format(module.name, module.version, module.compatibility_level))
-                if deps:
+                f.write("module(\n")
+                f.write(f'    name = "{module.name}",\n')
+                f.write(f'    version = "{module.version}",\n')
+                if module.compatibility_level is not None:
+                    f.write(f"    compatibility_level = {module.compatibility_level},\n")
+                f.write(")\n")
+                if module.deps:
                     f.write("\n")
-                    f.write(deps)
-                f.write("\n")
+                    for name, version in module.deps:
+                        f.write(f'bazel_dep(name = "{name}", version = "{version}")\n')
 
         # Create source.json & copy patch files to the registry
         source = {

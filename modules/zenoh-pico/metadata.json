@@ -12,7 +12,11 @@
         "github:eclipse-zenoh/zenoh-pico"
     ],
     "versions": [
-        "1.7.2"
+        "1.7.2",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0",
+        "1.10.1"
     ],
     "yanked_versions": {}
 }

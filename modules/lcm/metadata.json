@@ -12,7 +12,9 @@
         "github:lcm-proj/lcm"
     ],
     "versions": [
-        "1.5.2"
+        "1.5.2",
+        "1.5.2.bcr.1",
+        "1.5.3"
     ],
     "yanked_versions": {}
 }

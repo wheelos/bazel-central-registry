@@ -1,0 +1,11 @@
+{
+    "url": "https://github.com/eProsima/Fast-DDS/archive/refs/tags/v2.14.6.tar.gz",
+    "integrity": "sha256-Tt7Ddn1KKHqFU7G7sKc0Yri7YdmN1g/FbyYb5gEpBDg=",
+    "strip_prefix": "Fast-DDS-2.14.6",
+    "patches": {
+        "add_build_file.patch": "sha256-9edp3wmRRldbLbxLnC6y73wJk006zYRvvCHjZOYOLEk=",
+        "module_dot_bazel.patch": "sha256-yf7qSy2Lh8xmFLLiUBoVWwrIN6/UKgHTSPoHyF0ZLSA=",
+        "writer_lifecycle_barrier.patch": "sha256-MOExUGWH1DNrc1l+3GLLfJvIW9qnkMg/UQhkX9iO0LE="
+    },
+    "patch_strip": 0
+}

@@ -18,7 +18,7 @@ The BCR follows the format of a regular [Bazel registry](https://bazel.build/ext
     - If the string has the format of `github:<org>/<repo>`, then source URLs from `https://github.com/<org>/<repo>` are allowed (see the [validations](#validations) section below).
     - If the string has the format of a regular URL (such as `https://foo.com/bar`), then source URLs beginning with the string are allowed. The string can optionally end in a slash (`/`), with no difference in the semantics (for example, `https://foo.com/bar/thing.zip` would be accepted, but `https://foo.com/barthing.zip` would not).
   - `deprecated`: a string. When set, this denotes that the module should not be used. Must be set if the module's latest version is [yanked](#yank-a-module-version).
-- The `source.json` file must be of the `type` `archive` (which is the default) or `git_repository`. Other types such as `local_path` are not allowed.
+- The `source.json` file must be of the `type` `archive` (which is the default). Other types such as `git_repository` or `local_path` are not allowed.
 - A presubmit.yml file. See [Presubmit](#presubmit) below.
 
 ## Contribute a Bazel module
@@ -72,16 +72,18 @@ Validations performed in the scripts are:
 
 - Verify the module version exists in the `metadata.json` of the module.
 - Verify the source archive URL matches the source repository specified in `metadata.json`.
-- Verify the source archive URL is stable if it comes from GitHub. (See [this discussion](https://github.com/bazel-contrib/SIG-rules-authors/issues/11#issuecomment-1029861300)). Comment `@bazel-io skip_check unstable_url` to skip this check.
+- Verify the source archive URL is stable if it comes from GitHub. (See [this discussion](https://github.com/bazel-contrib/SIG-rules-authors/issues/11#issuecomment-1029861300)). Comment `@bazel-io skip_check unstable_url` to skip this optional check.
 - Verify the integrity values of the source archive and patch files (if any) are correct.
 - Verify the checked-in `MODULE.bazel` file matches the one in the extracted and patched source tree.
-- Verify the `compatibility_level` in `MODULE.bazel` matches the previous version. If the bump is intentional, you can comment `@bazel-io skip_check compatibility_level` in the PR to skip this check.
-- Check if the module is new or the `presubmit.yml` file is changed compared to the last version, if so a BCR maintainer review will be required to run jobs specified in `presubmit.yml`.
+- Verify the `compatibility_level` in `MODULE.bazel` matches the previous version. If the bump is intentional, comment `@bazel-io skip_check compatibility_level` in the PR to skip this optional check.
+- Check if the module is new or the `presubmit.yml` file is too different compared to the last version, if so a BCR maintainer review will be required to run jobs specified in `presubmit.yml`.
 
 Additional validations implemented in the [bcr_presubmit.py](https://github.com/bazelbuild/continuous-integration/blob/master/buildkite/bazel-central-registry/bcr_presubmit.py) script:
 
 - The checked-in `MODULE.bazel`, `source.json`, patches files are not modified in the PR.
 - The files outside of `modules/` directory are not modified in the pull request if the PR is adding a new module version.
+
+Skip-check comments are intentionally lightweight escape hatches for optional validations. The bot records each skip by applying the corresponding label to the PR. These labels skip only the named checks; they do not by themselves approve a PR, merge a PR, or bypass other BCR validation and CI requirements.
 
 ### Anonymous module test
 
@@ -190,11 +192,41 @@ incompatible_flags:
 
 During presubmit jobs, flags matching the current Bazel version in use will be tested. This applies to both the [anonymous module](#anonymous-module-test) and the [test module](#test-module).
 
-If you need to temporarily skip incompatible flags testing, you can comment `@bazel-io skip_check incompatible_flags` in your PR. This will automatically add the `skip-incompatible-flags-test` label to the PR, bypassing incompatible flags testing for all presubmit jobs. You can migrate for those breaking changes at a later time.
+If you need to temporarily skip incompatible flags testing, comment `@bazel-io skip_check incompatible_flags` in the PR. This will automatically add the `skip-incompatible-flags-test` label to the PR, bypassing incompatible flags testing for all presubmit jobs. You can migrate for those breaking changes at a later time.
 
 For an overview result of testing top BCR modules with incompatible flags, you can check the nightly build of [BCR Bazel Compatibility Test](https://buildkite.com/bazel/bcr-bazel-compatibility-test).
 
 Before adding a flag in [incompatible_flag.yml](/incompatible_flags.yml), please make sure the most commonly used modules are fixed, otherwise migration for other modules will be blocked without any workaround.
+
+### Downstream test
+
+The [BCR Downstream Test](https://buildkite.com/bazel/bcr-downstream-test) checks whether a new module version breaks the modules that directly depend on it. It's optional and doesn't block merging, but it's useful for widely used modules.
+
+To run it, add the `run-downstream-test` label to the PR (ask a BCR maintainer if you can't add labels). A build tests only one module version. If a PR changes several module versions, a BCR maintainer can trigger a build manually with `TARGET_MODULE` set to the one to test (e.g. `protobuf@36.2`).
+
+The test:
+
+- Selects the latest versions of the top 50 direct dependents of the module, ranked by [PageRank](/tools/README.md#module_analyzerpy).
+- Runs the [anonymous module](#anonymous-module-test) and [test module](#test-module) tasks from each dependent's `presubmit.yml`, with the new module version overridden via `--override_module`.
+- Skips dependent tasks that use a Bazel major version the new module version isn't tested with in its own `presubmit.yml`.
+
+You can configure the test in the `presubmit.yml` file of the new module version under a top-level `bcr_downstream_test` field:
+
+```yaml
+bcr_downstream_test:
+  # Number of top direct dependents to test (default: 50).
+  select_top_bcr_modules: 20
+  # Ignore dev dependencies when selecting direct dependents (default: false).
+  exclude_dev_deps: true
+  # Test these module versions instead of the top direct dependents.
+  # module_selections: ["grpc@latest", "rules_go@latest"]
+  # Only test a random percentage of the selected modules.
+  # smoke_test_percentage: 50
+  # Run all tasks with this Bazel version instead of their own.
+  # use_bazel_version: 8.x
+```
+
+See the [BCR Downstream Test documentation](https://github.com/bazelbuild/continuous-integration/tree/master/buildkite/bazel-central-registry#bcr-downstream-test) for all options.
 
 ## Approval and submission
 
@@ -207,13 +239,17 @@ To be submitted, a PR needs to:
   - If you see your presubmit check stuck on "blocked", a BCR maintainer needs to explicitly unblock the presubmit run or apply the `presubmit-auto-run` label to your PR. This is to avoid abuse of our CI system. Feel free to ping `@bazelbuild/bcr-maintainers` if you're blocked on this.
 - Pass certain other checks, especially for first-time contributors, such as CLA signing or GitHub workflows that require approval from BCR maintainers.
 
+The `bazel-io` bot regularly reviews open PRs and merges those that meet the requirements above, but these scheduled runs can be delayed by a few hours.
+To have a PR reviewed right away, anyone can comment `@bazel-io review` on the PR thread.
+The bot then merges the PR if all modified modules are approved by their maintainers and all checks pass, or replies with what is still missing.
+
 In case a release is broken, the PR to publish it may never be merged.
 Module maintainers can ask the `bazel-io` bot to close a PR by commenting `@bazel-io abandon` on the PR thread.
 This is intended for cases where the PR is opened by a bot account, and helps BCR maintainers keep the PR backlog manageable.
 
 ## Module versions
 
-Bazel has a diverse ecosystem, and projects use a variety of versioning schemes. Bazel modules have a fairly relaxed [version format](https://bazel.build/external/module#version_format), which covers most version strings used by open-source projects. Thus, modules submitted to the BCR are generally versioned according to their upstream project's versions.
+Bazel has a diverse ecosystem, and projects use a variety of versioning schemes. Bazel modules have a fairly relaxed [version format](https://bazel.build/external/module#version-format), which covers most version strings used by open-source projects. Thus, modules submitted to the BCR are generally versioned according to their upstream project's versions.
 
 ### Add-only
 
@@ -236,7 +272,7 @@ For example, in `zlib`'s [metadata.json](https://github.com/bazelbuild/bazel-cen
 }
 ```
 
-A Bzlmod user's build will start to fail if the yanked version is in the resolved dependency graph, and the yanked reason will be presented in the error message. The user can choose to upgrade the dependency or they can bypass the check by specifying the `--allow_yanked_versions` flag or the `BZLMOD_ALLOW_YANKED_VERSIONS` environment variable. Check [the documentation](https://bazel.build/reference/command-line-reference#flag--allow_yanked_versions) to learn how to use them.
+A Bzlmod user's build will start to fail if the yanked version is in the resolved dependency graph, and the yanked reason will be presented in the error message. The user can choose to upgrade the dependency or they can bypass the check by specifying the `--allow_yanked_versions` flag or the `BZLMOD_ALLOW_YANKED_VERSIONS` environment variable. Check [the documentation](https://bazel.build/reference/command-line-reference#param-allow-yanked-versions) to learn how to use them.
 
 The latest version of a module should not be yanked. If you do need to yank the latest version because the module is deprecated, you should add `"deprecated": "<reason>"` in its `metadata.json` file.
 
