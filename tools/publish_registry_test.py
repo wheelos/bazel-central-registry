@@ -75,7 +75,7 @@ class PublicationTest(unittest.TestCase):
                 lambda key: self.fail(key),
             )
 
-    def test_requires_consumer_validation_for_every_new_upload(self):
+    def test_requires_basic_validation_for_every_new_upload(self):
         immutable, mutable = plan_uploads(self.root, set(), lambda key: self.fail(key))
         with self.assertRaisesRegex(ValueError, "example@1.0"):
             validate_publication(immutable, mutable, [], set(), lambda key: self.fail(key))

@@ -105,6 +105,11 @@ def main():
     parser.add_argument("--base", required=True)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--github-output", type=Path)
+    parser.add_argument(
+        "--include-consumers",
+        action="store_true",
+        help="Select the declared Ubuntu consumer builds in addition to basic checks.",
+    )
     args = parser.parse_args()
     root = Path(os.environ.get("BUILD_WORKSPACE_DIRECTORY", Path(__file__).resolve().parents[1]))
     try:
@@ -118,7 +123,7 @@ def main():
         import yaml
 
         matrix = []
-        for module in versions:
+        for module in versions if args.include_consumers else []:
             name, version = module.split("@")
             spec = yaml.safe_load((root / "modules" / name / version / "presubmit.yml").read_text())
             try:

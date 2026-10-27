@@ -3,7 +3,9 @@
 import base64
 import hashlib
 import json
+import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -60,6 +62,63 @@ class RegistryChangesTest(unittest.TestCase):
     def test_selects_untracked_new_versions(self):
         self.add_version("1.1")
         self.assertEqual(["example@1.1"], check_changes(self.root, "HEAD"))
+
+    def test_accepts_upstream_https_sources_without_a_wheelos_mirror(self):
+        path = self.add_version("1.1")
+        source_path = path / "source.json"
+        source = json.loads(source_path.read_text())
+        for url in (
+            "https://github.com/example/project/releases/download/v1.1/source.tar.gz",
+            "https://upstream.example.org/releases/source.tar.gz",
+            "https://dl.wheelos.cn/releases/source.tar.gz",
+        ):
+            with self.subTest(url=url):
+                source["url"] = url
+                source_path.write_text(json.dumps(source))
+                self.assertEqual(["example@1.1"], check_changes(self.root, "HEAD"))
+        source["url"] = "http://upstream.example.org/source.tar.gz"
+        source_path.write_text(json.dumps(source))
+        with self.assertRaisesRegex(ValueError, "HTTPS"):
+            check_changes(self.root, "HEAD")
+
+    def run_check_cli(self, *args):
+        output = self.root / "github-output"
+        output.unlink(missing_ok=True)
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(Path(__file__).with_name("check_registry_changes.py")),
+                "--base",
+                "HEAD",
+                "--github-output",
+                str(output),
+                *args,
+            ],
+            env=dict(os.environ, BUILD_WORKSPACE_DIRECTORY=str(self.root)),
+            capture_output=True,
+            text=True,
+        )
+        return result, output
+
+    def test_basic_checks_do_not_require_consumer_coverage(self):
+        self.add_version("1.1")
+        result, output = self.run_check_cli()
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual('matrix=[]\nversions=["example@1.1"]\n', output.read_text())
+
+    def test_optional_consumer_checks_still_require_coverage(self):
+        path = self.add_version("1.1")
+        result, _ = self.run_check_cli("--include-consumers")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("Ubuntu 22.04", result.stderr)
+        (path / "presubmit.yml").write_text("tasks:\n  build:\n    platform: ubuntu2204\n    bazel: 7.x\n")
+        result, output = self.run_check_cli("--include-consumers")
+        self.assertEqual(0, result.returncode, result.stderr)
+        values = dict(line.split("=", 1) for line in output.read_text().splitlines())
+        self.assertEqual(
+            [{"module": "example@1.1", "bazel_version": "7.6.2"}],
+            json.loads(values["matrix"]),
+        )
 
     def test_rejects_edit_delete_or_new_file_in_published_version(self):
         path = self.root / "modules/example/1.0"

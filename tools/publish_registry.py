@@ -54,7 +54,7 @@ def validate_publication(immutable, mutable, validated, existing, read_remote):
     missing = required - set(validated)
     if missing:
         raise ValueError(
-            f"Publication includes versions without this run's consumer validation: "
+            f"Publication includes versions without this run's basic validation: "
             f"{sorted(missing)}; rerun validation from an earlier base."
         )
 

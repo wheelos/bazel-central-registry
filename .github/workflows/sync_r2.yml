@@ -9,6 +9,10 @@ on:
         description: Last validated registry commit to compare against
         required: true
         type: string
+      run_consumers:
+        description: Also run changed modules' consumer builds before publication
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -23,6 +27,7 @@ jobs:
     uses: ./.github/workflows/validate-modules.yml
     with:
       base: ${{ inputs.base || github.event.before }}
+      run_consumers: ${{ inputs.run_consumers == true }}
 
   deploy:
     needs: validate

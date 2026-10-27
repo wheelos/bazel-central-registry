@@ -14,8 +14,15 @@ Run these commands from this registry checkout, inside the managed development
 container as the mapped non-root user:
 
 ```sh
-bazelisk test //tools:check_registry_changes_test //tools:publish_registry_test //tools:wheelos_presubmit_test
+python -m ruff format --check --exclude modules .
+bazelisk test //tools:check_registry_changes_test //tools:publish_registry_test
 bazelisk run //tools:check_registry_changes -- --base <previous-registry-commit>
+```
+
+For source or build-rule changes, run the optional consumer checks:
+
+```sh
+bazelisk test //tools:wheelos_presubmit_test
 bazelisk run //tools:wheelos_presubmit -- --module=<name>@<version> --bazel-version=8.8.1 --base=<previous-registry-commit>
 ```
 
@@ -32,10 +39,21 @@ archive bytes must fail integrity verification. Source-repository matching,
 download integrity, overlays/patches and MODULE consistency remain mandatory;
 changed archive bytes must fail rather than updating an existing integrity.
 
-Pull requests validate changed metadata and every new entry's declared Ubuntu
-22.04 Bazel matrix. Consumers fetch from this registry without local source
-overrides. The spconv generation presubmit is not GPU execution evidence;
-its CUDA 12.8 / SM89 consumer needs a separate GPU build and runtime test.
+Pull requests and pushes to `main` run basic checks: Python formatting, policy
+and publication regression tests, append-only version policy, HTTPS source
+URLs, declared archive integrity, local patch/overlay integrity, and changed
+metadata schemas. Source archives may remain on upstream HTTPS hosts; they do
+not all need to be mirrored to `https://dl.wheelos.cn`. Basic checks do not
+download every source archive or compile every module.
+
+Each push to `main` triggers registry synchronization to R2 after validation.
+Only registry metadata, MODULE files, patches and overlays are published, not
+the upstream source archives. Consumer builds are optional: enable
+`run_consumers` in the manual R2 workflow, or run `wheelos_presubmit` above
+for a selected module. These checks download and verify source archives and
+run the declared Ubuntu 22.04 Bazel matrix without local source overrides.
+The spconv generation presubmit is not GPU execution evidence; its CUDA 12.8 /
+SM89 consumer needs a separate GPU build and runtime test.
 
 Production publication requires the validation workflow to succeed and the
 `registry-production` GitHub environment to be configured with the existing R2

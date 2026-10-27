@@ -21,8 +21,7 @@ from registry import RegistryClient
 def validation_exceptions(source_url):
     exceptions = ["presubmit_yml"]
     if isinstance(source_url, str) and re.fullmatch(
-        r"https://github\.com/[\w.-]+/[\w.-]+/archive/"
-        r"(?:[0-9a-f]{40}|refs/tags/v?\d+\.\d+\.\d+)\.(?:tar\.gz|zip)",
+        r"https://github\.com/[\w.-]+/[\w.-]+/archive/" r"(?:[0-9a-f]{40}|refs/tags/v?\d+\.\d+\.\d+)\.(?:tar\.gz|zip)",
         source_url,
     ):
         exceptions.append("url_stability")
@@ -45,22 +44,16 @@ class GitRegistryBaseline:
 
     def read_json(self, path):
         command = ["git", "-C", str(self.root)]
-        if not subprocess.check_output(
-            [*command, "ls-tree", "--name-only", self.revision, "--", path]
-        ):
+        if not subprocess.check_output([*command, "ls-tree", "--name-only", self.revision, "--", path]):
             return None
-        return json.loads(
-            subprocess.check_output([*command, "show", f"{self.revision}:{path}"])
-        )
+        return json.loads(subprocess.check_output([*command, "show", f"{self.revision}:{path}"]))
 
     def get_latest_module_version(self, name):
         metadata = self.read_json(f"modules/{name}/metadata.json")
         if metadata is None:
             return None
         version = metadata["versions"][-1]
-        return BaselineModule(
-            version, self.read_json(f"modules/{name}/{version}/attestations.json")
-        )
+        return BaselineModule(version, self.read_json(f"modules/{name}/{version}/attestations.json"))
 
 
 def prepare_test_module(anonymous, destination, name, spec, version, bazel):
@@ -156,22 +149,17 @@ def main():
     if os.geteuid() == 0:
         parser.error("Run registry consumers as a non-root user.")
     name, version = args.module.split("@")
-    root = Path(
-        os.environ.get("BUILD_WORKSPACE_DIRECTORY", Path(__file__).resolve().parents[1])
-    )
+    root = Path(os.environ.get("BUILD_WORKSPACE_DIRECTORY", Path(__file__).resolve().parents[1]))
     registry = RegistryClient(root)
     schema = json.loads((root / "metadata.schema.json").read_text())
     jsonschema.validate(registry.get_metadata(name), schema)
-    validator = BcrValidator(
-        registry, upstream=GitRegistryBaseline(root, args.base), should_fix=False
-    )
+    validator = BcrValidator(registry, upstream=GitRegistryBaseline(root, args.base), should_fix=False)
     source_path = root / "modules" / name / version / "source.json"
     source = json.loads(source_path.read_text())
     exceptions = validation_exceptions(source.get("url"))
     if "url_stability" in exceptions:
         print(
-            "Accepting checksummed commit or version-tag GitHub archive; "
-            "URL byte-stability classification waived.",
+            "Accepting checksummed commit or version-tag GitHub archive; " "URL byte-stability classification waived.",
             flush=True,
         )
     # This fork uses PR review and accepts checksummed commit/version-tag archives.
@@ -185,14 +173,10 @@ def main():
         anonymous.mkdir()
         bcr_presubmit.create_anonymous_repo(name, version, anonymous)
         config = bcr_presubmit.get_anonymous_module_task_config(name, version)
-        run_tasks(
-            anonymous, config["tasks"], args.bazel_version, args.bazel, args.cache
-        )
+        run_tasks(anonymous, config["tasks"], args.bazel_version, args.bazel, args.cache)
         config = bcr_presubmit.get_test_module_task_config(name, version)
         if config.get("tasks"):
-            spec = yaml.safe_load(
-                (root / "modules" / name / version / "presubmit.yml").read_text()
-            )
+            spec = yaml.safe_load((root / "modules" / name / version / "presubmit.yml").read_text())
             test_root = prepare_test_module(
                 anonymous,
                 Path(directory) / "module_src",
