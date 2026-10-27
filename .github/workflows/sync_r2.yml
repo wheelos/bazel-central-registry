@@ -22,15 +22,38 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  prepare:
+    if: github.repository == 'wheelos/bazel-central-registry'
+    runs-on: ubuntu-22.04
+    outputs:
+      base: ${{ steps.base.outputs.base }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Resolve registry validation base
+        id: base
+        env:
+          BASE_REF: ${{ inputs.base || github.event.before }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [[ "$EVENT_NAME" == "push" ]]; then
+            BASE_REF=$(python3 tools/check_registry_changes.py \
+              --base "$BASE_REF" --resolve-base-if-empty)
+          fi
+          BASE_REF=$(git rev-parse --verify --end-of-options "${BASE_REF}^{commit}")
+          echo "base=$BASE_REF" >> "$GITHUB_OUTPUT"
+
   validate:
     if: github.repository == 'wheelos/bazel-central-registry'
+    needs: prepare
     uses: ./.github/workflows/validate-modules.yml
     with:
-      base: ${{ inputs.base || github.event.before }}
+      base: ${{ needs.prepare.outputs.base }}
       run_consumers: ${{ inputs.run_consumers == true }}
 
   deploy:
-    needs: validate
+    needs: [prepare, validate]
     runs-on: ubuntu-22.04
     environment: registry-production
     steps:
@@ -45,7 +68,7 @@ jobs:
           AWS_DEFAULT_REGION: auto
           R2_ENDPOINT: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
           VALIDATED_VERSIONS: ${{ needs.validate.outputs.versions }}
-          BASE_REF: ${{ inputs.base || github.event.before }}
+          BASE_REF: ${{ needs.prepare.outputs.base }}
         run: |
           printf '%s\n' "$VALIDATED_VERSIONS" > "$RUNNER_TEMP/registry-validated-versions.json"
           python3 tools/publish_registry.py \

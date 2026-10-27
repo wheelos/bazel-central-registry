@@ -14,6 +14,23 @@ def git(root, *arguments):
     return subprocess.check_output(["git", "-C", str(root), *arguments])
 
 
+def resolve_base(root, base, recover_empty=False):
+    if not recover_empty:
+        return base
+    changed = git(
+        root, "diff", "--name-only", base, "HEAD", "--", "modules", "bazel_registry.json"
+    )
+    if changed:
+        return base
+    latest_registry_change = git(
+        root, "log", "-1", "--format=%H", "HEAD", "--", "modules", "bazel_registry.json"
+    ).decode().strip()
+    if not latest_registry_change:
+        return base
+    parents = git(root, "rev-list", "--parents", "-n", "1", latest_registry_change).decode().split()
+    return parents[1] if len(parents) > 1 else base
+
+
 def check_changes(root, base):
     old_paths = set(git(root, "ls-tree", "-r", "--name-only", "-z", base, "--", "modules").decode().split("\0"))
     changed = set(git(root, "diff", "--name-only", "-z", base, "--", "modules").decode().split("\0"))
@@ -106,12 +123,23 @@ def main():
     parser.add_argument("--output", type=Path)
     parser.add_argument("--github-output", type=Path)
     parser.add_argument(
+        "--resolve-base-if-empty",
+        action="store_true",
+        help="When the base has no registry diff, use the parent of the latest registry change.",
+    )
+    parser.add_argument(
         "--include-consumers",
         action="store_true",
         help="Select the declared Ubuntu consumer builds in addition to basic checks.",
     )
     args = parser.parse_args()
     root = Path(os.environ.get("BUILD_WORKSPACE_DIRECTORY", Path(__file__).resolve().parents[1]))
+    if args.resolve_base_if_empty:
+        try:
+            print(resolve_base(root, args.base, recover_empty=True))
+        except (OSError, subprocess.CalledProcessError) as error:
+            parser.exit(1, f"Could not resolve registry validation base: {error}\n")
+        return
     try:
         versions = check_changes(root, args.base)
     except (ValueError, OSError, subprocess.CalledProcessError) as error:
