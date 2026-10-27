@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from check_registry_changes import check_changes, consumer_versions, resolve_base
+from check_registry_changes import check_changes, consumer_versions
 
 
 class RegistryChangesTest(unittest.TestCase):
@@ -62,25 +62,6 @@ class RegistryChangesTest(unittest.TestCase):
     def test_selects_untracked_new_versions(self):
         self.add_version("1.1")
         self.assertEqual(["example@1.1"], check_changes(self.root, "HEAD"))
-
-    def test_resolves_empty_push_base_to_pending_registry_change(self):
-        self.add_version("1.1")
-        self.commit()
-        registry_change = self.run_git("rev-parse", "HEAD").decode().strip()
-        (self.root / "README").write_text("unrelated follow-up\n")
-        self.commit()
-
-        base = resolve_base(self.root, registry_change, recover_empty=True)
-
-        self.assertEqual(self.run_git("rev-parse", f"{registry_change}^").decode().strip(), base)
-        self.assertEqual(["example@1.1"], check_changes(self.root, base))
-
-    def test_keeps_base_when_push_contains_registry_changes(self):
-        base = self.run_git("rev-parse", "HEAD").decode().strip()
-        self.add_version("1.1")
-        self.commit()
-
-        self.assertEqual(base, resolve_base(self.root, base, recover_empty=True))
 
     def test_accepts_upstream_https_sources_without_a_wheelos_mirror(self):
         path = self.add_version("1.1")

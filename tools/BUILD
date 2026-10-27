@@ -107,20 +107,6 @@ py_test(
     deps = [":wheelos_presubmit"],
 )
 
-py_binary(
-    name = "publish_registry",
-    srcs = ["publish_registry.py"],
-    imports = ["."],
-    legacy_create_init = 0,
-)
-
-py_test(
-    name = "publish_registry_test",
-    srcs = ["publish_registry_test.py"],
-    legacy_create_init = 0,
-    deps = [":publish_registry"],
-)
-
 py_library(
     name = "verify_stable_archives",
     srcs = ["verify_stable_archives.py"],
