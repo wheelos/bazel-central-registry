@@ -1,0 +1,9 @@
+--- a/gtsam/geometry/SL4.cpp
++++ b/gtsam/geometry/SL4.cpp
+@@ -7,4 +7,6 @@
+ #include <gtsam/geometry/SL4.h>
+ 
++#include <cassert>
++
+ // To use exp(), log()
+ #include <unsupported/Eigen/MatrixFunctions>

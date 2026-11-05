@@ -1,0 +1,12 @@
+{
+    "integrity": "sha256-QjMZL9kVSqLAzNBa69gz2L9nMHiId0iV57Oz2YsxYHo=",
+    "overlay": {
+        "BUILD.bazel": "sha256-Gd0O8ccGbCs8wjYDigkwadWWKEX+Erjb9zYxp59TJ1o="
+    },
+    "patch_strip": 1,
+    "patches": {
+        "gtsam_sl4_cassert.patch": "sha256-TkuPvoA51hwxmjvqVGl53VjMCc7936wZRKHCc1ru2s0="
+    },
+    "strip_prefix": "gtsam-4.3a1",
+    "url": "https://github.com/borglab/gtsam/archive/refs/tags/4.3a1.tar.gz"
+}
