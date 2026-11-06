@@ -1,0 +1,35 @@
+load("@rules_cc//cc:defs.bzl", "cc_import", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_import(
+    name = "livekit_shared",
+    shared_library = "lib/liblivekit.so",
+)
+
+cc_import(
+    name = "livekit_ffi_shared",
+    shared_library = "lib/liblivekit_ffi.so",
+)
+
+cc_library(
+    name = "livekit_sdk",
+    hdrs = glob(["include/livekit/**/*.h"]),
+    includes = ["include"],
+    target_compatible_with = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ],
+    deps = [
+        ":livekit_ffi_shared",
+        ":livekit_shared",
+    ],
+)
+
+filegroup(
+    name = "runtime_libs",
+    srcs = [
+        "lib/liblivekit.so",
+        "lib/liblivekit_ffi.so",
+    ],
+)
