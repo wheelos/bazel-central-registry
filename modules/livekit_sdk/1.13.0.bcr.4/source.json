@@ -1,0 +1,13 @@
+{
+    "url": "https://github.com/livekit/client-sdk-cpp/releases/download/v1.13.0/livekit-sdk-ubuntu-22.04-x64-1.13.0.tar.gz",
+    "integrity": "sha256-YHEleOFDUGib7v82Z1CIyLkcEFC5BkQfcdsxIIn+j6g=",
+    "strip_prefix": "livekit-sdk-ubuntu-22.04-x64-1.13.0",
+    "overlay": {
+        "BUILD.bazel": "sha256-pVo8Rd/acoYj8BL6cPeILBYks36myG1DnthEYzZN/Po=",
+        "MODULE.bazel": "sha256-6F9K8grxrfoVhlo4S7ersUDbSi1fX2R5rA9p5jbBTXo=",
+        "lib/liblivekit_ffi.so": "sha256-kzWLcHPXG8nDcI064Ezgx85HyClEmeihu9GRLr1wgLg=",
+        "lib/liblivekit_ffi_arm64.so": "sha256-FxOxuJ/EqdTN/9BZkSTrrbKA8HoQeAa54wiM2zL1TDc=",
+        "livekit_repositories.bzl": "sha256-wbM+NdiQmPvamaMjaANtCqo24xagCKgqng9NIJ9RknY=",
+        "sdk.BUILD.bazel": "sha256-qw5aXK6G9840prQZ298/IrgJD2Ltp5vBTRgCZ7MeGeg="
+    }
+}

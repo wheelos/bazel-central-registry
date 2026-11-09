@@ -12,7 +12,8 @@
         "github:livekit/client-sdk-cpp"
     ],
     "versions": [
-        "1.13.0"
+        "1.13.0",
+        "1.13.0.bcr.4"
     ],
     "yanked_versions": {}
 }
