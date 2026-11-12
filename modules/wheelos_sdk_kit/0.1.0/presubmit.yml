@@ -7,9 +7,11 @@ matrix:
 
 tasks:
   verify_targets:
-    name: Verify build targets
+    name: Verify WheelOS SDK Kit targets
     platform: ${{ platform }}
     bazel: ${{ bazel }}
+    build_flags:
+      - '--cxxopt=-std=c++17'
+      - '--host_cxxopt=-std=c++17'
     build_targets:
-      - '@livekit_sdk//:livekit_sdk'
-      - '@livekit_sdk//:runtime_libs'
+      - '@wheelos_sdk_kit//...'

@@ -3,8 +3,9 @@
     "integrity": "sha256-YHEleOFDUGib7v82Z1CIyLkcEFC5BkQfcdsxIIn+j6g=",
     "strip_prefix": "livekit-sdk-ubuntu-22.04-x64-1.13.0",
     "overlay": {
-        "BUILD.bazel": "sha256-Rd2t/lxhcOOcMdYgu7gSJBlvrnhyKNtT3uvxTgWcpQ8=",
-        "MODULE.bazel": "sha256-tX4rdeyqPvngwgg/vDq3ppqCENDc61XlKpW2KgXty6g=",
-        "lib/liblivekit_ffi.so": "sha256-kzWLcHPXG8nDcI064Ezgx85HyClEmeihu9GRLr1wgLg="
+        "BUILD.bazel": "sha256-pVo8Rd/acoYj8BL6cPeILBYks36myG1DnthEYzZN/Po=",
+        "MODULE.bazel": "sha256-ckRFt5pzzILgvHdQWUvK8xqYsAF9GrcxTrn13rJwr6I=",
+        "livekit_repositories.bzl": "sha256-s1m6wvn2HKh3q0kQ07pdAwRLMRuc3A2b0IlL5bdnF2w=",
+        "sdk.BUILD.bazel": "sha256-qw5aXK6G9840prQZ298/IrgJD2Ltp5vBTRgCZ7MeGeg="
     }
 }

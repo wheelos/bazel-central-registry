@@ -6,8 +6,6 @@ def _platform_sdk_impl(ctx):
         sha256 = ctx.attr.sha256,
         stripPrefix = ctx.attr.strip_prefix,
     )
-    ctx.delete("lib/liblivekit_ffi.so")
-    ctx.symlink(ctx.path(ctx.attr.ffi), "lib/liblivekit_ffi.so")
     ctx.template(
         "BUILD.bazel",
         ctx.attr.build_file,
@@ -21,7 +19,6 @@ platform_sdk = repository_rule(
             mandatory = True,
             values = ["aarch64", "x86_64"],
         ),
-        "ffi": attr.label(mandatory = True, allow_single_file = True),
         "build_file": attr.label(
             default = Label("//:sdk.BUILD.bazel"),
         ),

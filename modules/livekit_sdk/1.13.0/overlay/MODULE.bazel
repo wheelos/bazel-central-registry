@@ -2,7 +2,26 @@ module(
     name = "livekit_sdk",
     version = "1.13.0",
     compatibility_level = 1,
+    bazel_compatibility = [">=7.2.1"],
 )
 
 bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "rules_cc", version = "0.0.9")
+
+platform_sdk = use_repo_rule("//:livekit_repositories.bzl", "platform_sdk")
+
+platform_sdk(
+    name = "livekit_linux_x86_64",
+    cpu = "x86_64",
+    sha256 = "c713ebc7f67e40a85baeaa0acc19e4e96d10042a0f7bd6639f3db1bff53f795a",
+    strip_prefix = "livekit-sdk-1.13.0-linux-x86_64",
+    url = "https://dl.wheelos.cn/release/public/livekit_sdk/1.13.0/linux-x86_64/livekit-sdk-1.13.0-linux-x86_64.tar.gz",
+)
+
+platform_sdk(
+    name = "livekit_linux_aarch64",
+    cpu = "aarch64",
+    sha256 = "a5edbd476a4ca4f7c34a682c22e9b7b901a008400adb596fc4c89d4614ad50b5",
+    strip_prefix = "livekit-sdk-1.13.0-linux-aarch64",
+    url = "https://dl.wheelos.cn/release/public/livekit_sdk/1.13.0/linux-aarch64/livekit-sdk-1.13.0-linux-aarch64.tar.gz",
+)

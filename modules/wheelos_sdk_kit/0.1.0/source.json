@@ -1,0 +1,8 @@
+{
+    "url": "https://github.com/wheelos/sdk-kit/releases/download/v0.1.0/sdk-kit-0.1.0.tar.gz",
+    "integrity": "sha256-4FfvaG7ZGWOMOrbrpQzbPGpcpWrHxtp0dBxyeHOo8Zo=",
+    "strip_prefix": "sdk-kit-0.1.0",
+    "overlay": {
+        "MODULE.bazel": "sha256-fl+6rKY9CfNy8IdA/g9UH5SSmHaH4KygjqiQLsagmJQ="
+    }
+}
