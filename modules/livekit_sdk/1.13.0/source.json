@@ -1,10 +1,10 @@
 {
-    "url": "https://github.com/livekit/client-sdk-cpp/releases/download/v1.13.0/livekit-sdk-ubuntu-22.04-x64-1.13.0.tar.gz",
-    "integrity": "sha256-YHEleOFDUGib7v82Z1CIyLkcEFC5BkQfcdsxIIn+j6g=",
-    "strip_prefix": "livekit-sdk-ubuntu-22.04-x64-1.13.0",
+    "url": "https://dl.wheelos.cn/release/public/livekit_sdk/1.13.1/linux-x86_64/livekit-sdk-1.13.1-linux-x86_64.tar.gz",
+    "integrity": "sha256-m8Ir4xz0slK/TFsmzoLlKPY8XQn4dAEaVaGpOu4gQ0w=",
+    "strip_prefix": "livekit-sdk-1.13.1-linux-x86_64",
     "overlay": {
         "BUILD.bazel": "sha256-pVo8Rd/acoYj8BL6cPeILBYks36myG1DnthEYzZN/Po=",
-        "MODULE.bazel": "sha256-ckRFt5pzzILgvHdQWUvK8xqYsAF9GrcxTrn13rJwr6I=",
+        "MODULE.bazel": "sha256-wgJ0dvC5ZuYrVsoZIr1LtYXm2N7l2ILZkYUs7/H2F6U=",
         "livekit_repositories.bzl": "sha256-s1m6wvn2HKh3q0kQ07pdAwRLMRuc3A2b0IlL5bdnF2w=",
         "sdk.BUILD.bazel": "sha256-qw5aXK6G9840prQZ298/IrgJD2Ltp5vBTRgCZ7MeGeg="
     }
