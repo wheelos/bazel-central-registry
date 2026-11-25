@@ -1,0 +1,27 @@
+module(
+    name = "livekit_sdk",
+    version = "1.13.1",
+    compatibility_level = 1,
+    bazel_compatibility = [">=7.2.1"],
+)
+
+bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "rules_cc", version = "0.0.9")
+
+platform_sdk = use_repo_rule("//:livekit_repositories.bzl", "platform_sdk")
+
+platform_sdk(
+    name = "livekit_linux_x86_64",
+    cpu = "x86_64",
+    sha256 = "df818eda28c916873efd2cc280c7fcd7cd81bb1be246617946f19ba6a07bb29d",
+    strip_prefix = "livekit-sdk-ubuntu-22.04-x64-1.13.1",
+    url = "https://github.com/livekit/client-sdk-cpp/releases/download/v1.13.1/livekit-sdk-ubuntu-22.04-x64-1.13.1.tar.gz",
+)
+
+platform_sdk(
+    name = "livekit_linux_aarch64",
+    cpu = "aarch64",
+    sha256 = "b82f81baca79c1510962adef65f5611b10ef9545e1d44a664a5fa29aea451fa0",
+    strip_prefix = "livekit-sdk-ubuntu-22.04-arm64-1.13.1",
+    url = "https://github.com/livekit/client-sdk-cpp/releases/download/v1.13.1/livekit-sdk-ubuntu-22.04-arm64-1.13.1.tar.gz",
+)
