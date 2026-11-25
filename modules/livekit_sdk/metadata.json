@@ -13,7 +13,8 @@
         "https://dl.wheelos.cn/release/public/livekit_sdk"
     ],
     "versions": [
-        "1.13.0"
+        "1.13.0",
+        "1.13.1"
     ],
     "yanked_versions": {}
 }

@@ -1,0 +1,11 @@
+{
+    "url": "https://github.com/livekit/client-sdk-cpp/archive/5cd2af1e95ba102ce1bc20034bbc7240f03bf05d.tar.gz",
+    "integrity": "sha256-iyVK+jhdeUS1v60odXi1NpS6KgiDPaGC9Wt2xLRZOcU=",
+    "strip_prefix": "client-sdk-cpp-5cd2af1e95ba102ce1bc20034bbc7240f03bf05d",
+    "overlay": {
+        "BUILD.bazel": "sha256-pVo8Rd/acoYj8BL6cPeILBYks36myG1DnthEYzZN/Po=",
+        "MODULE.bazel": "sha256-sUAocOzdyUGG8DE4Uwk/8BObYGvXR61Ax5BS9vX6pWo=",
+        "livekit_repositories.bzl": "sha256-s1m6wvn2HKh3q0kQ07pdAwRLMRuc3A2b0IlL5bdnF2w=",
+        "sdk.BUILD.bazel": "sha256-qw5aXK6G9840prQZ298/IrgJD2Ltp5vBTRgCZ7MeGeg="
+    }
+}
