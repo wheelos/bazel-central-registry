@@ -1,0 +1,16 @@
+{
+    "homepage": "https://github.com/tomojitakasu/RTKLIB",
+    "maintainers": [
+        {
+            "github": "humble528",
+            "github_user_id": 296745130
+        }
+    ],
+    "repository": [
+        "github:tomojitakasu/RTKLIB"
+    ],
+    "versions": [
+        "2.4.3-b34"
+    ],
+    "yanked_versions": {}
+}

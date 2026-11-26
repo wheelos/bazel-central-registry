@@ -1,0 +1,9 @@
+{
+    "url": "https://github.com/tomojitakasu/RTKLIB/archive/180043ee24b6d2b168f98b64be15f69d50046b1a.tar.gz",
+    "integrity": "sha256-6CMaaTGwxdEvsmNoVyzT/FFfvQnUocdZftSVXxWhARM=",
+    "strip_prefix": "RTKLIB-180043ee24b6d2b168f98b64be15f69d50046b1a",
+    "patch_strip": 1,
+    "patches": {
+        "rtklib-b34.patch": "sha256-EDZopDSPNqKyMq3PtmHLqFLdr00uNpNo1zrscnkhLyY="
+    }
+}

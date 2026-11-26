@@ -1,0 +1,269 @@
+diff --git a/MODULE.bazel b/MODULE.bazel
+--- /dev/null
++++ b/MODULE.bazel
+@@ -0,0 +1,3 @@
++module(name = "rtklib", version = "2.4.3-b34")
++
++bazel_dep(name = "rules_cc", version = "0.0.9")
+diff --git a/BUILD.bazel b/BUILD.bazel
+--- /dev/null
++++ b/BUILD.bazel
+@@ -0,0 +1,23 @@
++load("@rules_cc//cc:defs.bzl", "cc_library")
++
++package(default_visibility = ["//visibility:public"])
++
++exports_files(["src/rtklib.h", "LICENSE.txt"])
++
++cc_library(
++    name = "rtklib",
++    srcs = [
++        "src/rcvraw.c",
++        "src/rtcm.c",
++        "src/rtcm2.c",
++        "src/rtcm3.c",
++        "src/rtcm3e.c",
++        "src/rtkcmn.c",
++        "src/sbas.c",
++    ] + glob(["src/rcv/*.c"]),
++    hdrs = ["src/rtklib.h"],
++    defines = ["NFREQ=5", "NEXOBS=3", "ENAGLO", "ENACMP", "ENAGAL", "ENAQZS"],
++    linkopts = ["-lm", "-pthread"],
++    strip_include_prefix = "src",
++    alwayslink = True,
++)
+diff --git a/src/rcv/novatel.c b/src/rcv/novatel.c
+--- a/src/rcv/novatel.c
++++ b/src/rcv/novatel.c
+@@ -290,7 +290,8 @@
+ * notes  : refer [1][3]
+ *-----------------------------------------------------------------------------*/
+ static int decode_track_stat(uint32_t stat, int *sys, int *code, int *track,
+-                             int *plock, int *clock, int *parity, int *halfc)
++                             int *plock, int *clock, int *parity, int *halfc,
++                             const char *opt)
+ {
+     int satsys,sigtype,idx=-1;
+     
+@@ -315,7 +316,12 @@
+             trace(2,"oem4 unknown system: sys=%d\n",satsys);
+             return -1;
+     }
+-    if (!(*code=sig2code(*sys,sigtype))||(idx=code2idx(*sys,*code))<0) {
++    *code=(*sys==SYS_GPS||*sys==SYS_QZS)&&sigtype==18&&
++          (strstr(opt,"-APOLLO_LEGACY")||strstr(opt,"-CGI230"))?
++          CODE_L2X:sig2code(*sys,sigtype);
++    if (*sys==SYS_QZS&&sigtype==9&&strstr(opt,"-APOLLO_LEGACY")&&
++        !strstr(opt,"-CGI230")) *code=CODE_L2D;
++    if (!*code||(idx=code2idx(*sys,*code))<0) {
+         trace(2,"oem4 signal type error: sys=%d sigtype=%d\n",*sys,sigtype);
+         return -1;
+     }
+@@ -362,7 +368,7 @@
+     uint8_t *p=raw->buff+OEM4HLEN;
+     char *q;
+     double psr,adr,adr_rolls,lockt,tt,dop,snr,freq,glo_bias=0.0;
+-    int i,index,nobs,prn,sat,sys,code,idx,track,plock,clock,parity,halfc,lli;
++    int i,index,nobs,prn,sat,sys,code,idx,track,plock,clock,parity,halfc,lli,accepted=0;
+     
+     if ((q=strstr(raw->opt,"-GLOBIAS="))) sscanf(q,"-GLOBIAS=%lf",&glo_bias);
+     
+@@ -374,10 +380,18 @@
+     if (raw->outtype) {
+         sprintf(raw->msgtype+strlen(raw->msgtype)," nobs=%d",nobs);
+     }
++    if (!nobs||fabs(timediff(raw->obs.data[0].time,raw->time))>1E-9) {
++        raw->obs.n=0;
++    }
+     for (i=0,p+=4;i<nobs;i++,p+=24) {
+         if ((idx=decode_track_stat(U4(p),&sys,&code,&track,&plock,&clock,
+-                                   &parity,&halfc))<0) {
++                                   &parity,&halfc,raw->opt))<0) {
+             continue;
++        }
++        if (sys==SYS_GPS&&code==CODE_L2P&&strstr(raw->opt,"-APOLLO_LEGACY")&&
++            !strstr(raw->opt,"-CGI230")) {
++            code=CODE_L1P;
++            idx=0;
+         }
+         prn=U1(p+17);
+         if (sys==SYS_GLO) prn-=37;
+@@ -397,7 +411,10 @@
+         dop=exsign(U4(p+4)&0xFFFFFFF,28)/256.0;
+         psr=(U4(p+7)>>4)/128.0+U1(p+11)*2097152.0;
+         
+-        if ((freq=sat2freq(sat,(uint8_t)code,&raw->nav))!=0.0) {
++        freq=sys==SYS_GLO&&strstr(raw->opt,"-CGI230")?
++             code2freq(sys,(uint8_t)code,(U2(p+20)>>10)-7):
++             sat2freq(sat,(uint8_t)code,&raw->nav);
++        if (freq!=0.0) {
+             adr=I4(p+12)/256.0;
+             adr_rolls=(psr*freq/CLIGHT+adr)/MAXVAL;
+             adr=-adr+MAXVAL*floor(adr_rolls+(adr_rolls<=0?-0.5:0.5));
+@@ -429,6 +446,7 @@
+             raw->obs.n=0;
+         }
+         if ((index=obsindex(&raw->obs,raw->time,sat))>=0) {
++            accepted++;
+             raw->obs.data[index].L  [idx]=adr;
+             raw->obs.data[index].P  [idx]=psr;
+             raw->obs.data[index].D  [idx]=(float)dop;
+@@ -437,6 +455,7 @@
+             raw->obs.data[index].code[idx]=(uint8_t)code;
+         }
+     }
++    if (!accepted) raw->obs.n=0;
+     return 1;
+ }
+ /* decode RANGEB -------------------------------------------------------------*/
+@@ -445,7 +464,7 @@
+     uint8_t *p=raw->buff+OEM4HLEN;
+     char *q;
+     double psr,adr,dop,snr,lockt,tt,freq,glo_bias=0.0;
+-    int i,index,nobs,prn,sat,sys,code,idx,track,plock,clock,parity,halfc,lli;
++    int i,index,nobs,prn,sat,sys,code,idx,track,plock,clock,parity,halfc,lli,accepted=0;
+     int gfrq;
+     
+     if ((q=strstr(raw->opt,"-GLOBIAS="))) sscanf(q,"-GLOBIAS=%lf",&glo_bias);
+@@ -458,10 +477,18 @@
+     if (raw->outtype) {
+         sprintf(raw->msgtype+strlen(raw->msgtype)," nobs=%d",nobs);
+     }
++    if (!nobs||fabs(timediff(raw->obs.data[0].time,raw->time))>1E-9) {
++        raw->obs.n=0;
++    }
+     for (i=0,p+=4;i<nobs;i++,p+=44) {
+         if ((idx=decode_track_stat(U4(p+40),&sys,&code,&track,&plock,&clock,
+-                                   &parity,&halfc))<0) {
++                                   &parity,&halfc,raw->opt))<0) {
+             continue;
++        }
++        if (sys==SYS_GPS&&code==CODE_L2P&&strstr(raw->opt,"-APOLLO_LEGACY")&&
++            !strstr(raw->opt,"-CGI230")) {
++            code=CODE_L1P;
++            idx=0;
+         }
+         prn=U2(p);
+         if (sys==SYS_GLO) prn-=37;
+@@ -512,6 +539,7 @@
+             raw->obs.n=0;
+         }
+         if ((index=obsindex(&raw->obs,raw->time,sat))>=0) {
++            accepted++;
+             raw->obs.data[index].L  [idx]=-adr;
+             raw->obs.data[index].P  [idx]=psr;
+             raw->obs.data[index].D  [idx]=(float)dop;
+@@ -520,6 +548,7 @@
+             raw->obs.data[index].code[idx]=(uint8_t)code;
+         }
+     }
++    if (!accepted) raw->obs.n=0;
+     return 1;
+ }
+ /* decode RAWEPHEMB ----------------------------------------------------------*/
+diff --git a/src/rtklib.h b/src/rtklib.h
+--- a/src/rtklib.h
++++ b/src/rtklib.h
+@@ -905,6 +905,8 @@
+     char msgtype[256];  /* last message type */
+     char msmtype[7][128]; /* msm signal types */
+     int obsflag;        /* obs data complete flag (1:ok,0:not complete) */
++    unsigned int observation_input_signals;
++    unsigned int observation_omitted_signals;
+     int ephsat;         /* input ephemeris satellite number */
+     int ephset;         /* input ephemeris set (0-1) */
+     double cp[MAXSAT][NFREQ+NEXOBS]; /* carrier-phase measurement */
+diff --git a/src/rtcm.c b/src/rtcm.c
+--- a/src/rtcm.c
++++ b/src/rtcm.c
+@@ -91,6 +91,7 @@
+     rtcm->msg[0]=rtcm->msgtype[0]=rtcm->opt[0]='\0';
+     for (i=0;i<6;i++) rtcm->msmtype[i][0]='\0';
+     rtcm->obsflag=rtcm->ephsat=0;
++    rtcm->observation_input_signals=rtcm->observation_omitted_signals=0;
+     for (i=0;i<MAXSAT;i++) for (j=0;j<NFREQ+NEXOBS;j++) {
+         rtcm->cp[i][j]=0.0;
+         rtcm->lock[i][j]=rtcm->loss[i][j]=0;
+diff --git a/src/rtcm3.c b/src/rtcm3.c
+--- a/src/rtcm3.c
++++ b/src/rtcm3.c
+@@ -1953,7 +1953,7 @@
+     
+     /* test code priority */
+     for (i=0;i<n;i++) {
+-        if (!code[i]) continue;
++        if (!code[i]||idx[i]<0) continue;
+         
+         if (idx[i]>=NFREQ) { /* save as extended signal if idx >= NFREQ */
+             ex[i]=1;
+@@ -1990,7 +1990,7 @@
+                          const int *ex, const int *half)
+ {
+     const char *sig[32];
+-    double tt,freq;
++    double freq;
+     uint8_t code[32];
+     char *msm_type="",*q=NULL;
+     int i,j,k,type,prn,sat,fcn,index=0,idx[32];
+@@ -2035,6 +2035,12 @@
+     
+     /* get signal index */
+     sigindex(sys,code,h->nsig,rtcm->opt,idx);
++
++    if (rtcm->obsflag||fabs(timediff(rtcm->obs.data[0].time,rtcm->time))>1E-9) {
++        rtcm->obs.n=rtcm->obsflag=0;
++        rtcm->observation_input_signals=rtcm->observation_omitted_signals=0;
++        rtcm->obs.data[0].time=rtcm->time;
++    }
+     
+     for (i=j=0;i<h->nsat;i++) {
+         
+@@ -2043,10 +2049,6 @@
+         else if (sys==SYS_SBS) prn+=MINPRNSBS-1;
+         
+         if ((sat=satno(sys,prn))) {
+-            tt=timediff(rtcm->obs.data[0].time,rtcm->time);
+-            if (rtcm->obsflag||fabs(tt)>1E-9) {
+-                rtcm->obs.n=rtcm->obsflag=0;
+-            }
+             index=obsindex(&rtcm->obs,rtcm->time,sat);
+         }
+         else {
+@@ -2071,7 +2073,8 @@
+         for (k=0;k<h->nsig;k++) {
+             if (!h->cellmask[k+i*h->nsig]) continue;
+             
+-            if (sat&&index>=0&&idx[k]>=0) {
++            rtcm->observation_input_signals++;
++            if (sat&&index>=0&&idx[k]>=0&&code[k]!=CODE_NONE) {
+                 freq=fcn<-7?0.0:code2freq(sys,code[k],fcn);
+                 
+                 /* pseudorange (m) */
+@@ -2092,6 +2095,9 @@
+                 rtcm->obs.data[index].SNR [idx[k]]=(uint16_t)(cnr[j]/SNR_UNIT+0.5);
+                 rtcm->obs.data[index].code[idx[k]]=code[k];
+             }
++            else {
++                rtcm->observation_omitted_signals++;
++            }
+             j++;
+         }
+     }
+@@ -2179,8 +2185,15 @@
+ static int decode_msm0(rtcm_t *rtcm, int sys)
+ {
+     msm_h_t h={0};
+-    int i,sync,iod;
+-    if (decode_msm_head(rtcm,sys,&sync,&iod,&h,&i)<0) return -1;
++    int i,sync,iod,ncell;
++    if ((ncell=decode_msm_head(rtcm,sys,&sync,&iod,&h,&i))<0) return -1;
++    if (rtcm->obsflag||fabs(timediff(rtcm->obs.data[0].time,rtcm->time))>1E-9) {
++        rtcm->obs.n=rtcm->obsflag=0;
++        rtcm->observation_input_signals=rtcm->observation_omitted_signals=0;
++        rtcm->obs.data[0].time=rtcm->time;
++    }
++    rtcm->observation_input_signals+=ncell;
++    rtcm->observation_omitted_signals+=ncell;
+     rtcm->obsflag=!sync;
+     return sync?0:1;
+ }
